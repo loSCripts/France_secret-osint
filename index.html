@@ -3,675 +3,171 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SIRENE — Système d'Information de Renseignement et d'Enquête Nationale</title>
-<style>
-  :root {
-    --bleu: #003189;
-    --bleu-clair: #1e4db7;
-    --rouge: #ED2939;
-    --blanc: #ffffff;
-    --gris-clair: #f5f5f5;
-    --gris-moyen: #e0e0e0;
-    --gris-texte: #555;
-    --noir: #1a1a1a;
-    --vert-ok: #018941;
-    --orange: #d97706;
-    --shadow: 0 2px 8px rgba(0,0,0,0.08);
-    --shadow-lg: 0 4px 20px rgba(0,0,0,0.12);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html { min-height: 100%; background: var(--gris-clair); }
-
-  body {
-    font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-    background: var(--gris-clair);
-    color: var(--noir);
-    font-size: 14px;
-    line-height: 1.6;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* ─── HEADER ─── */
-  .header-band {
-    background: var(--blanc);
-    border-bottom: 3px solid var(--bleu);
-    padding: 10px 0 0;
-  }
-  .header-top {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 24px 10px;
-  }
-  .drapeau {
-    width: 48px;
-    height: 34px;
-    border-radius: 2px;
-    overflow: hidden;
-    display: flex;
-    flex-shrink: 0;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-  }
-  .drapeau div { flex: 1; height: 100%; }
-  .drapeau .bleu { background: var(--bleu); }
-  .drapeau .blanc { background: #fff; }
-  .drapeau .rouge { background: var(--rouge); }
-  .rf-logo { display: flex; flex-direction: column; line-height: 1.2; }
-  .rf-logo .republique { font-weight: 700; font-size: 13px; color: var(--noir); letter-spacing: 0.05em; text-transform: uppercase; }
-  .rf-logo .francaise { font-weight: 400; font-size: 12px; color: var(--gris-texte); letter-spacing: 0.03em; text-transform: uppercase; }
-  .separator { width: 2px; height: 40px; background: var(--gris-moyen); }
-  .site-title { display: flex; flex-direction: column; }
-  .site-title h1 { font-size: 18px; font-weight: 700; color: var(--bleu); letter-spacing: 0.02em; }
-  .site-title .subtitle { font-size: 11px; color: var(--gris-texte); letter-spacing: 0.05em; text-transform: uppercase; }
-  .header-badge {
-    margin-left: auto;
-    background: var(--bleu);
-    color: white;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 4px 10px;
-    border-radius: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  /* ─── NAV ─── */
-  .nav-bar {
-    background: var(--bleu);
-    border-top: 2px solid var(--rouge);
-  }
-  .nav-inner {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 24px;
-    display: flex;
-    gap: 0;
-    overflow-x: auto;
-  }
-  .nav-item {
-    color: rgba(255,255,255,0.8);
-    font-size: 12.5px;
-    font-weight: 500;
-    padding: 10px 18px;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s;
-    white-space: nowrap;
-    text-decoration: none;
-    display: block;
-    letter-spacing: 0.02em;
-  }
-  .nav-item:hover { color: white; background: rgba(255,255,255,0.08); }
-  .nav-item.active { color: white; border-bottom-color: #FFD700; background: rgba(255,255,255,0.1); }
-
-  /* ─── MAIN ─── */
-  .main { max-width: 1200px; margin: 0 auto; padding: 28px 24px 60px; flex: 1; width: 100%; }
-
-  /* ─── SECTION CARD ─── */
-  .section-card {
-    background: var(--blanc);
-    border: 1px solid var(--gris-moyen);
-    border-top: 4px solid var(--bleu);
-    border-radius: 2px;
-    margin-bottom: 24px;
-    box-shadow: var(--shadow);
-    display: none;
-  }
-  .section-card.active { display: block; }
-
-  .card-header {
-    padding: 18px 24px 14px;
-    border-bottom: 1px solid var(--gris-moyen);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .card-icon {
-    width: 36px; height: 36px;
-    background: var(--bleu);
-    color: white;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 2px;
-    font-size: 16px;
-    flex-shrink: 0;
-  }
-  .card-header-text h2 {
-    font-size: 15px; font-weight: 700; color: var(--bleu);
-    letter-spacing: 0.02em;
-  }
-  .card-header-text p { font-size: 12px; color: var(--gris-texte); margin-top: 2px; }
-
-  .card-body { padding: 24px; }
-
-  /* ─── FORMS ─── */
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-  }
-  .form-group { display: flex; flex-direction: column; gap: 5px; }
-  .form-group label {
-    font-size: 11.5px; font-weight: 700; color: var(--bleu);
-    text-transform: uppercase; letter-spacing: 0.06em;
-  }
-  .form-group input, .form-group select, .form-group textarea {
-    border: 1px solid #ccc;
-    border-radius: 2px;
-    padding: 9px 12px;
-    font-size: 13px;
-    font-family: inherit;
-    background: white;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    outline: none;
-  }
-  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-    border-color: var(--bleu);
-    box-shadow: 0 0 0 2px rgba(0,49,137,0.1);
-  }
-
-  .btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 10px 22px;
-    border: none; border-radius: 2px; cursor: pointer;
-    font-size: 13px; font-weight: 700; letter-spacing: 0.04em;
-    font-family: inherit; text-transform: uppercase;
-    transition: all 0.2s;
-  }
-  .btn-primary { background: var(--bleu); color: white; }
-  .btn-primary:hover { background: var(--bleu-clair); }
-  .btn-danger { background: var(--rouge); color: white; }
-  .btn-danger:hover { background: #c41e2d; }
-  .btn-sm { padding: 7px 14px; font-size: 11.5px; }
-
-  /* ─── RÉSULTATS ─── */
-  .result-box {
-    background: var(--gris-clair);
-    border: 1px solid var(--gris-moyen);
-    border-left: 4px solid var(--bleu);
-    border-radius: 2px;
-    padding: 16px;
-    margin-top: 18px;
-    font-size: 13px;
-    display: none;
-  }
-  .result-box.show { display: block; }
-  .result-row { display: flex; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--gris-moyen); }
-  .result-row:last-child { border-bottom: none; }
-  .result-key { font-weight: 700; color: var(--bleu); min-width: 180px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
-  .result-val { color: var(--noir); }
-  .tag { display: inline-block; background: var(--bleu); color: white; padding: 2px 8px; border-radius: 2px; font-size: 11px; font-weight: 700; margin: 2px; text-transform: uppercase; }
-  .tag.green { background: var(--vert-ok); }
-  .tag.orange { background: var(--orange); }
-  .tag.red { background: var(--rouge); }
-
-  /* ─── LOADER ─── */
-  .loader {
-    display: none; align-items: center; gap: 10px;
-    color: var(--bleu); font-size: 13px; font-weight: 500;
-    margin-top: 14px;
-  }
-  .loader.show { display: flex; }
-  .spinner {
-    width: 18px; height: 18px;
-    border: 2px solid var(--gris-moyen);
-    border-top-color: var(--bleu);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ─── FACE RECOGNITION ─── */
-  .face-zone {
-    border: 2px dashed var(--gris-moyen);
-    border-radius: 4px;
-    padding: 40px 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: var(--gris-clair);
-  }
-  .face-zone:hover { border-color: var(--bleu); background: rgba(0,49,137,0.03); }
-  .face-zone.dragging { border-color: var(--bleu); background: rgba(0,49,137,0.06); }
-  .face-zone p { color: var(--gris-texte); font-size: 13px; margin-top: 8px; }
-  #face-preview { max-width: 200px; max-height: 200px; margin: 12px auto 0; display: none; border-radius: 4px; border: 2px solid var(--bleu); }
-
-  /* ─── DORKING ─── */
-  .dork-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 10px;
-    margin-bottom: 18px;
-  }
-  .dork-btn {
-    background: var(--gris-clair);
-    border: 1px solid var(--gris-moyen);
-    border-radius: 2px;
-    padding: 10px 12px;
-    cursor: pointer;
-    font-size: 12px;
-    font-family: 'Courier New', monospace;
-    color: var(--bleu);
-    text-align: left;
-    transition: all 0.15s;
-    font-weight: 600;
-  }
-  .dork-btn:hover { background: var(--bleu); color: white; border-color: var(--bleu); }
-  #dork-query {
-    font-family: 'Courier New', monospace;
-    font-size: 13px;
-    background: #1a1a2e;
-    color: #00ff88;
-    border: 1px solid #333;
-    border-radius: 2px;
-    padding: 12px 14px;
-    width: 100%;
-    outline: none;
-    box-sizing: border-box;
-  }
-  #dork-query:focus { border-color: #00ff88; box-shadow: 0 0 0 2px rgba(0,255,136,0.15); }
-
-  /* ─── METADATA ─── */
-  .meta-table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 12.5px; }
-  .meta-table th { background: var(--bleu); color: white; padding: 8px 12px; text-align: left; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
-  .meta-table td { padding: 7px 12px; border-bottom: 1px solid var(--gris-moyen); }
-  .meta-table tr:nth-child(even) td { background: var(--gris-clair); }
-
-  /* ─── NOTICE ─── */
-  .notice {
-    background: #fff8e1;
-    border: 1px solid #ffd54f;
-    border-left: 4px solid var(--orange);
-    border-radius: 2px;
-    padding: 12px 16px;
-    font-size: 12.5px;
-    color: #5d4037;
-    margin-bottom: 20px;
-  }
-  .notice strong { font-weight: 700; }
-
-  /* ─── FOOTER ─── */
-  .footer {
-    background: var(--bleu);
-    color: rgba(255,255,255,0.7);
-    text-align: center;
-    padding: 16px 24px;
-    font-size: 11.5px;
-    letter-spacing: 0.04em;
-    width: 100%;
-    flex-shrink: 0;
-  }
-  .footer a { color: rgba(255,255,255,0.85); text-decoration: underline; }
-
-  /* ─── WAYBACK ─── */
-  .wayback-frame {
-    width: 100%; height: 400px; border: 1px solid var(--gris-moyen);
-    border-radius: 2px; margin-top: 14px; display: none;
-  }
-  .wayback-list { margin-top: 14px; display: none; }
-  .wayback-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 8px 12px; border-bottom: 1px solid var(--gris-moyen);
-    font-size: 12.5px;
-  }
-  .wayback-item:hover { background: var(--gris-clair); }
-  .wayback-item a { color: var(--bleu); text-decoration: none; font-weight: 500; }
-  .wayback-item a:hover { text-decoration: underline; }
-
-  /* Section title badge */
-  .section-selector {
-    display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 24px;
-  }
-  .sec-btn {
-    display: flex; align-items: center; gap: 8px;
-    background: white; border: 1px solid var(--gris-moyen);
-    border-radius: 2px; padding: 10px 16px; cursor: pointer;
-    font-size: 12.5px; font-family: inherit; font-weight: 600;
-    color: var(--noir); transition: all 0.2s;
-    box-shadow: var(--shadow);
-  }
-  .sec-btn:hover { border-color: var(--bleu); color: var(--bleu); }
-  .sec-btn.active { background: var(--bleu); color: white; border-color: var(--bleu); }
-  .sec-btn .ico { font-size: 16px; }
-
-  /* Face auth overlay */
-  #auth-overlay {
-    position: fixed; inset: 0; z-index: 9999;
-    background: var(--gris-clair);
-    display: flex; align-items: center; justify-content: center;
-    transition: opacity 0.4s ease;
-  }
-  .auth-box {
-    text-align: center; max-width: 400px; padding: 48px 40px;
-    border: 1px solid var(--gris-moyen);
-    box-shadow: var(--shadow-lg);
-  }
-  .auth-logo { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 28px; }
-  .auth-drapeau { width: 42px; height: 28px; display: flex; border-radius: 2px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
-  .auth-drapeau div { flex: 1; }
-  .auth-title { font-size: 20px; font-weight: 700; color: var(--bleu); }
-  .auth-subtitle { font-size: 12px; color: var(--gris-texte); margin-bottom: 28px; letter-spacing: 0.05em; text-transform: uppercase; }
-  .camera-zone {
-    width: 200px; height: 200px; border: 3px solid var(--bleu);
-    border-radius: 50%; margin: 0 auto 20px; overflow: hidden;
-    position: relative; background: #f0f4ff;
-    display: flex; align-items: center; justify-content: center;
-  }
-  #auth-video { width: 100%; height: 100%; object-fit: cover; display: none; }
-  .camera-placeholder { color: var(--bleu); opacity: 0.4; }
-  .scan-line {
-    position: absolute; width: 100%; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--bleu), transparent);
-    top: 0; animation: scan 2s linear infinite; display: none;
-  }
-  @keyframes scan { 0% { top: 0%; } 100% { top: 100%; } }
-  .auth-status { font-size: 13px; color: var(--gris-texte); margin-bottom: 16px; height: 20px; }
-  .progress-bar { width: 100%; height: 4px; background: var(--gris-moyen); border-radius: 2px; overflow: hidden; margin-bottom: 20px; display: none; }
-  .progress-fill { height: 100%; background: var(--bleu); border-radius: 2px; width: 0%; transition: width 0.1s linear; }
-
-  /* ─── MOBILE ─── */
-  @media (max-width: 600px) {
-    .header-top { padding: 0 12px 10px; gap: 10px; }
-    .drapeau { width: 36px; height: 26px; }
-    .site-title h1 { font-size: 15px; }
-    .site-title .subtitle { display: none; }
-    .separator { display: none; }
-    .rf-logo .francaise { display: none; }
-    .header-badge { font-size: 9px; padding: 3px 7px; }
-
-    .nav-inner { padding: 0 8px; }
-    .nav-item { padding: 10px 12px; font-size: 12px; }
-
-    .main { padding: 14px 10px 40px; }
-    .card-header { padding: 14px 14px 12px; }
-    .card-body { padding: 14px; }
-
-    .form-grid { grid-template-columns: 1fr; }
-    .form-group[style*="1 / -1"] { grid-column: 1 / -1 !important; }
-
-    .btn { padding: 10px 14px; font-size: 12px; }
-    .result-row { flex-direction: column; gap: 2px; }
-    .result-key { min-width: unset; }
-
-    .wayback-item { flex-wrap: wrap; gap: 6px; font-size: 11.5px; }
-    .wayback-item span:nth-child(3) { display: none; }
-
-    .auth-box { padding: 32px 20px; max-width: 95vw; }
-    .camera-zone { width: 160px; height: 160px; }
-
-    .dork-grid { grid-template-columns: repeat(2, 1fr); }
-
-    .notice { font-size: 12px; padding: 10px 12px; }
-    .footer { font-size: 10.5px; padding: 12px; line-height: 1.8; }
-  }
-</style>
-<!-- ExifReader : parseur EXIF complet côté navigateur -->
+<title>OSINT — Outil d'investigation numérique</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
+<style>
+:root{--bleu:#003189;--bleu-clair:#1e4db7;--rouge:#ED2939;--blanc:#fff;--gris-clair:#f7f8fa;--gris-moyen:#e2e6ea;--gris-texte:#6b7280;--noir:#111827;--vert-ok:#059669;--orange:#d97706;--shadow:0 1px 4px rgba(0,0,0,.07);--shadow-lg:0 4px 24px rgba(0,0,0,.10)}
+*{box-sizing:border-box;margin:0;padding:0}
+html{min-height:100%;background:var(--gris-clair)}
+body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;background:var(--gris-clair);color:var(--noir);font-size:14px;line-height:1.6;min-height:100vh;display:flex;flex-direction:column}
+.header-band{background:var(--blanc);border-bottom:1px solid var(--gris-moyen);box-shadow:var(--shadow)}
+.header-top{display:flex;align-items:center;gap:16px;max-width:1100px;margin:0 auto;padding:14px 24px}
+.drapeau{width:44px;height:30px;border-radius:3px;overflow:hidden;display:flex;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.drapeau div{flex:1;height:100%}
+.drapeau .bleu{background:var(--bleu)}.drapeau .blanc{background:#fff}.drapeau .rouge{background:var(--rouge)}
+.site-title h1{font-size:17px;font-weight:800;color:var(--bleu);letter-spacing:.01em}
+.site-title .subtitle{font-size:11px;color:var(--gris-texte);letter-spacing:.04em;text-transform:uppercase}
+.header-badge{margin-left:auto;background:#f0f4ff;color:var(--bleu);font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;border:1px solid #c7d5f8;white-space:nowrap}
+.nav-bar{background:var(--bleu)}
+.nav-inner{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;overflow-x:auto;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav-item{color:rgba(255,255,255,.75);font-size:12.5px;font-weight:600;padding:11px 16px;cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap;text-decoration:none;display:block;letter-spacing:.02em}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.1)}
+.nav-item.active{color:#fff;border-bottom-color:#FFD700;background:rgba(255,255,255,.08)}
+.main{max-width:1100px;margin:0 auto;padding:28px 24px 60px;flex:1;width:100%}
+.notice{background:#fffbeb;border:1px solid #fde68a;border-left:4px solid var(--orange);border-radius:6px;padding:12px 16px;font-size:12.5px;color:#78350f;margin-bottom:22px}
+.section-card{background:var(--blanc);border:1px solid var(--gris-moyen);border-radius:8px;margin-bottom:24px;box-shadow:var(--shadow);display:none;overflow:hidden}
+.section-card.active{display:block}
+.card-header{padding:18px 22px 14px;border-bottom:1px solid var(--gris-moyen);display:flex;align-items:center;gap:14px;background:#fafbff}
+.card-icon{width:38px;height:38px;background:var(--bleu);color:#fff;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:17px;flex-shrink:0}
+.card-header-text h2{font-size:15px;font-weight:700;color:var(--bleu)}
+.card-header-text p{font-size:12px;color:var(--gris-texte);margin-top:2px}
+.card-body{padding:22px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-size:11.5px;font-weight:700;color:var(--bleu);text-transform:uppercase;letter-spacing:.06em}
+.form-group input,.form-group select{border:1px solid #d1d5db;border-radius:6px;padding:9px 12px;font-size:13px;font-family:inherit;background:#fff;transition:border-color .2s,box-shadow .2s;outline:none}
+.form-group input:focus,.form-group select:focus{border-color:var(--bleu);box-shadow:0 0 0 3px rgba(0,49,137,.08)}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700;letter-spacing:.03em;font-family:inherit;text-transform:uppercase;transition:all .15s}
+.btn-primary{background:var(--bleu);color:#fff}.btn-primary:hover{background:var(--bleu-clair)}
+.btn-sm{padding:6px 12px;font-size:11.5px}
+.btn-neutral{background:var(--gris-moyen);color:var(--noir)}.btn-neutral:hover{background:#cbd5e1}
+.result-box{background:var(--gris-clair);border:1px solid var(--gris-moyen);border-left:4px solid var(--bleu);border-radius:6px;padding:16px;margin-top:18px;font-size:13px;display:none}
+.result-box.show{display:block}
+.result-row{display:flex;gap:12px;padding:6px 0;border-bottom:1px solid var(--gris-moyen)}
+.result-row:last-child{border-bottom:none}
+.result-key{font-weight:700;color:var(--bleu);min-width:190px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;flex-shrink:0}
+.tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;margin:2px}
+.tag-green{background:#d1fae5;color:#065f46}.tag-orange{background:#fef3c7;color:#92400e}
+.tag-red{background:#fee2e2;color:#991b1b}.tag-grey{background:#f3f4f6;color:#374151}
+.loader{display:none;align-items:center;gap:10px;color:var(--bleu);font-size:13px;font-weight:600;margin-top:14px}
+.loader.show{display:flex}
+.spinner{width:18px;height:18px;border:2px solid var(--gris-moyen);border-top-color:var(--bleu);border-radius:50%;animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dork-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:16px}
+.dork-btn{background:#f0f4ff;border:1px solid #c7d5f8;border-radius:6px;padding:9px 12px;cursor:pointer;font-size:12px;font-family:'Courier New',monospace;color:var(--bleu);text-align:left;transition:all .12s;font-weight:600}
+.dork-btn:hover{background:var(--bleu);color:#fff;border-color:var(--bleu)}
+#dork-query{font-family:'Courier New',monospace;font-size:13px;background:#0f172a;color:#4ade80;border:1px solid #334155;border-radius:6px;padding:12px 14px;width:100%;outline:none;box-sizing:border-box}
+#dork-query:focus{border-color:#4ade80;box-shadow:0 0 0 2px rgba(74,222,128,.15)}
+.meta-table{width:100%;border-collapse:collapse;margin-top:14px;font-size:12.5px}
+.meta-table th{background:var(--bleu);color:#fff;padding:8px 12px;text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.meta-table td{padding:7px 12px;border-bottom:1px solid var(--gris-moyen)}
+.meta-table tr:nth-child(even) td{background:var(--gris-clair)}
+.drop-zone{border:2px dashed var(--gris-moyen);border-radius:8px;padding:36px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--gris-clair)}
+.drop-zone:hover,.drop-zone.dragging{border-color:var(--bleu);background:#f0f4ff}
+.drop-zone p{color:var(--gris-texte);font-size:13px;margin-top:8px}
+.myip-block{background:#f0f4ff;border:1px solid #c7d5f8;border-left:4px solid var(--bleu);border-radius:6px;padding:14px 16px;margin-bottom:18px}
+.wayback-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--gris-moyen);font-size:12.5px;flex-wrap:wrap;gap:6px}
+.wayback-item:hover{background:var(--gris-clair)}
+.wayback-item a{color:var(--bleu);text-decoration:none;font-weight:600}
+.footer{background:var(--bleu);color:rgba(255,255,255,.65);text-align:center;padding:14px 24px;font-size:11.5px;letter-spacing:.03em;flex-shrink:0}
+@media(max-width:600px){
+  .header-top{padding:10px 12px}.site-title .subtitle{display:none}
+  .main{padding:14px 10px 40px}.card-body{padding:14px}
+  .form-grid{grid-template-columns:1fr}.result-row{flex-direction:column;gap:2px}
+  .result-key{min-width:unset}.dork-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
 </head>
 <body>
 
-<!-- ─── AUTH OVERLAY ─── -->
-<div id="auth-overlay">
-  <div class="auth-box">
-    <div class="auth-logo">
-      <div class="auth-drapeau">
-        <div style="background:var(--bleu)"></div>
-        <div style="background:#fff"></div>
-        <div style="background:var(--rouge)"></div>
-      </div>
-      <div style="text-align:left">
-        <div style="font-weight:700;font-size:13px;letter-spacing:0.06em;text-transform:uppercase">République Française</div>
-        <div style="font-size:11px;color:var(--gris-texte);text-transform:uppercase;letter-spacing:0.04em">Ministère de l'Intérieur</div>
-      </div>
-    </div>
-    <div class="auth-title">SIRENE</div>
-    <div class="auth-subtitle">Authentification biométrique requise</div>
-    <div class="camera-zone">
-      <video id="auth-video" autoplay muted playsinline></video>
-      <div class="camera-placeholder" id="cam-placeholder">
-        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-      </div>
-      <div class="scan-line" id="scan-line"></div>
-    </div>
-    <div class="auth-status" id="auth-status">Cliquez sur le bouton pour démarrer</div>
-    <div class="progress-bar" id="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-    <button class="btn btn-primary" onclick="startFaceAuth()" id="auth-btn">
-      <span>🔒</span> Démarrer la reconnaissance
-    </button>
-    <p style="font-size:11px;color:var(--gris-texte);margin-top:16px">Accès réservé aux agents habilités — Niveau confidentiel défense</p>
-  </div>
-</div>
-
-<!-- ─── HEADER ─── -->
 <div class="header-band">
   <div class="header-top">
-    <div class="drapeau">
-      <div class="bleu"></div>
-      <div class="blanc"></div>
-      <div class="rouge"></div>
-    </div>
-    <div class="rf-logo">
-      <span class="republique">République</span>
-      <span class="francaise">Française</span>
-    </div>
-    <div class="separator"></div>
+    <div class="drapeau"><div class="bleu"></div><div class="blanc"></div><div class="rouge"></div></div>
     <div class="site-title">
-      <h1>SIRENE</h1>
-      <span class="subtitle">Système d'Information de Renseignement et d'Enquête Nationale</span>
+      <h1>OSINT — Investigation Numérique</h1>
+      <span class="subtitle">Outil de renseignement en sources ouvertes</span>
     </div>
-    <div class="header-badge">🔐 Accès sécurisé</div>
+    <div class="header-badge">🔎 Sources ouvertes</div>
   </div>
 </div>
 
-<!-- ─── NAV ─── -->
 <nav class="nav-bar">
   <div class="nav-inner">
-    <a class="nav-item active" onclick="showSection('identite',this)">🪪 Identité</a>
+    <a class="nav-item active" onclick="showSection('identite',this)">🪪 Fiche identité</a>
     <a class="nav-item" onclick="showSection('ip',this)">🌐 Géolocalisation IP</a>
     <a class="nav-item" onclick="showSection('wayback',this)">🕰️ Archives Web</a>
     <a class="nav-item" onclick="showSection('dorking',this)">🔍 Google Dorking</a>
     <a class="nav-item" onclick="showSection('email',this)">📧 Trace Email</a>
-    <a class="nav-item" onclick="showSection('metadata',this)">🖼️ Métadonnées</a>
+    <a class="nav-item" onclick="showSection('metadata',this)">🖼️ Métadonnées EXIF</a>
   </div>
 </nav>
 
-<!-- ─── MAIN ─── -->
-<main class="main" style="flex:1">
-
+<main class="main">
   <div class="notice">
-    <strong>⚠️ Avertissement légal :</strong> Cet outil est destiné à des fins de démonstration éducative uniquement. Certaines fonctionnalités utilisent des API publiques tierces. L'utilisation à des fins illégales est strictement interdite conformément à la loi n°78-17 du 6 janvier 1978.
+    <strong>⚠️ Avertissement :</strong> Cet outil utilise exclusivement des APIs publiques (ip-api.com, Internet Archive, ipify.org). Aucune base de données privée n'est interrogée. Usage éducatif uniquement, conformément à la loi n°78-17 du 6 janvier 1978.
   </div>
 
-  <!-- ─── SECTION 1 : IDENTITÉ ─── -->
+  <!-- IDENTITÉ -->
   <div class="section-card active" id="sec-identite">
     <div class="card-header">
       <div class="card-icon">🪪</div>
-      <div class="card-header-text">
-        <h2>Fiche d'identité — Renseignement Civil</h2>
-        <p>Recherche OSINT via BrixHub &amp; saisie manuelle d'identité</p>
-      </div>
+      <div class="card-header-text"><h2>Fiche d'identité — Saisie manuelle</h2><p>Création et horodatage d'une fiche locale</p></div>
     </div>
     <div class="card-body">
-
-      <!-- Onglets -->
-      <div style="display:flex;gap:0;border-bottom:2px solid var(--gris-moyen);margin-bottom:22px">
-        <button class="id-tab active" id="tab-brix" onclick="switchIdTab('brix')" style="background:none;border:none;padding:10px 20px;cursor:pointer;font-size:13px;font-weight:700;color:var(--bleu);border-bottom:3px solid var(--bleu);margin-bottom:-2px;font-family:inherit;letter-spacing:0.03em">
-          🔍 Recherche BrixHub
-        </button>
-        <button class="id-tab" id="tab-manuel" onclick="switchIdTab('manuel')" style="background:none;border:none;padding:10px 20px;cursor:pointer;font-size:13px;font-weight:700;color:var(--gris-texte);border-bottom:3px solid transparent;margin-bottom:-2px;font-family:inherit;letter-spacing:0.03em">
-          📋 Fiche manuelle
-        </button>
+      <div class="form-grid">
+        <div class="form-group"><label>Nom de famille</label><input type="text" id="nom" placeholder="DUPONT"></div>
+        <div class="form-group"><label>Prénom(s)</label><input type="text" id="prenom" placeholder="Jean-Pierre"></div>
+        <div class="form-group"><label>Date de naissance</label><input type="date" id="dob"></div>
+        <div class="form-group"><label>N° d'immatriculation</label><input type="text" id="immat" placeholder="AB-123-CD" maxlength="9" oninput="formatImmat(this)"></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Adresse</label><input type="text" id="adresse" placeholder="12 rue de la Paix"></div>
+        <div class="form-group"><label>Code postal</label><input type="text" id="cp" placeholder="75001" maxlength="5" oninput="this.value=this.value.replace(/\D/g,'')"></div>
+        <div class="form-group"><label>Ville</label><input type="text" id="ville" placeholder="Paris"></div>
       </div>
-
-      <!-- ─── ONGLET BRIXHUB ─── -->
-      <div id="panel-brix">
-        <div style="background:#e8eef8;border:1px solid #b3c6e8;border-left:4px solid var(--bleu);border-radius:2px;padding:10px 14px;margin-bottom:18px;font-size:12px;color:#1a2e5a">
-          <strong>🗄️ BrixHub OSINT</strong> — Interrogation de la base de données (+7,5 milliards de documents indexés). Recherchez par nom, email ou numéro de téléphone.
-        </div>
-
-        <!-- Mode de recherche -->
-        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-          <button class="brix-mode-btn active" id="bmode-name" onclick="setBrixMode('name')" style="background:var(--bleu);color:white;border:1px solid var(--bleu);border-radius:2px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit">👤 Nom / Prénom</button>
-          <button class="brix-mode-btn" id="bmode-email" onclick="setBrixMode('email')" style="background:white;color:var(--bleu);border:1px solid var(--gris-moyen);border-radius:2px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit">📧 Email</button>
-          <button class="brix-mode-btn" id="bmode-phone" onclick="setBrixMode('phone')" style="background:white;color:var(--bleu);border:1px solid var(--gris-moyen);border-radius:2px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit">📞 Téléphone</button>
-          <button class="brix-mode-btn" id="bmode-username" onclick="setBrixMode('username')" style="background:white;color:var(--bleu);border:1px solid var(--gris-moyen);border-radius:2px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit">🔑 Username</button>
-          <button class="brix-mode-btn" id="bmode-ip" onclick="setBrixMode('ip')" style="background:white;color:var(--bleu);border:1px solid var(--gris-moyen);border-radius:2px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit">🌐 Adresse IP</button>
-        </div>
-
-        <!-- Champs selon le mode -->
-        <div id="brix-fields-name" class="brix-fields">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Nom de famille</label>
-              <input type="text" id="brix-nom" placeholder="DUPONT">
-            </div>
-            <div class="form-group">
-              <label>Prénom</label>
-              <input type="text" id="brix-prenom" placeholder="Jean">
-            </div>
-          </div>
-        </div>
-
-        <div id="brix-fields-email" class="brix-fields" style="display:none">
-          <div class="form-group">
-            <label>Adresse email</label>
-            <input type="email" id="brix-email" placeholder="jean.dupont@gmail.com" style="max-width:420px">
-          </div>
-        </div>
-
-        <div id="brix-fields-phone" class="brix-fields" style="display:none">
-          <div class="form-group">
-            <label>Numéro de téléphone</label>
-            <input type="text" id="brix-phone" placeholder="+33612345678" style="max-width:280px">
-          </div>
-        </div>
-
-        <div id="brix-fields-username" class="brix-fields" style="display:none">
-          <div class="form-group">
-            <label>Nom d'utilisateur</label>
-            <input type="text" id="brix-username" placeholder="jean.dupont" style="max-width:280px">
-          </div>
-        </div>
-
-        <div id="brix-fields-ip" class="brix-fields" style="display:none">
-          <div class="form-group">
-            <label>Adresse IP</label>
-            <input type="text" id="brix-ip-search" placeholder="192.168.1.1" style="max-width:280px">
-          </div>
-        </div>
-
-        <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
-          <button class="btn btn-primary" onclick="searchBrixHub()">🔎 Lancer la recherche</button>
-          <button class="btn" style="background:var(--gris-moyen);color:var(--noir)" onclick="clearBrix()">🗑️ Effacer</button>
-        </div>
-
-        <div class="loader" id="loader-brix"><div class="spinner"></div> Interrogation de la base BrixHub...</div>
-        <div class="result-box" id="res-brix"></div>
+      <div style="margin-top:20px;display:flex;gap:10px">
+        <button class="btn btn-primary" onclick="generateFiche()">📋 Générer la fiche</button>
+        <button class="btn btn-neutral" onclick="clearFiche()">🗑️ Effacer</button>
       </div>
-
-      <!-- ─── ONGLET FICHE MANUELLE ─── -->
-      <div id="panel-manuel" style="display:none">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Nom de famille</label>
-            <input type="text" id="nom" placeholder="DUPONT">
-          </div>
-          <div class="form-group">
-            <label>Prénom(s)</label>
-            <input type="text" id="prenom" placeholder="Jean-Pierre">
-          </div>
-          <div class="form-group">
-            <label>Date de naissance</label>
-            <input type="date" id="dob">
-          </div>
-          <div class="form-group">
-            <label>N° d'immatriculation</label>
-            <input type="text" id="immat" placeholder="AB-123-CD" maxlength="9" oninput="formatImmat(this)">
-          </div>
-          <div class="form-group" style="grid-column: 1 / -1">
-            <label>Adresse</label>
-            <input type="text" id="adresse" placeholder="12 rue de la Paix">
-          </div>
-          <div class="form-group">
-            <label>Code postal</label>
-            <input type="text" id="cp" placeholder="75001" maxlength="5" oninput="this.value=this.value.replace(/\D/g,'')">
-          </div>
-          <div class="form-group">
-            <label>Ville</label>
-            <input type="text" id="ville" placeholder="Paris">
-          </div>
-        </div>
-        <div style="margin-top:20px;display:flex;gap:10px">
-          <button class="btn btn-primary" onclick="generateFiche()">📋 Générer la fiche</button>
-          <button class="btn" style="background:var(--gris-moyen);color:var(--noir)" onclick="clearFiche()">🗑️ Effacer</button>
-        </div>
-        <div class="result-box" id="res-identite"></div>
-      </div>
-
+      <div class="result-box" id="res-identite"></div>
     </div>
   </div>
 
-  <!-- ─── SECTION 2 : IP ─── -->
+  <!-- IP -->
   <div class="section-card" id="sec-ip">
     <div class="card-header">
       <div class="card-icon">🌐</div>
-      <div class="card-header-text">
-        <h2>Géolocalisation d'adresse IP</h2>
-        <p>Détection automatique de vos adresses IPv4 et IPv6 — Géolocalisation d'une IP cible</p>
-      </div>
+      <div class="card-header-text"><h2>Géolocalisation d'adresse IP</h2><p>Détection de vos IPs et géolocalisation via ip-api.com (API publique)</p></div>
     </div>
     <div class="card-body">
-
-      <!-- Bloc "Mes adresses IP" -->
-      <div id="myip-block" style="background:var(--gris-clair);border:1px solid var(--gris-moyen);border-left:4px solid var(--bleu);border-radius:2px;padding:14px 16px;margin-bottom:18px">
+      <div class="myip-block">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-          <span style="font-size:12px;font-weight:700;color:var(--bleu);text-transform:uppercase;letter-spacing:0.05em">📡 Mes adresses IP actuelles</span>
+          <span style="font-size:12px;font-weight:700;color:var(--bleu);text-transform:uppercase;letter-spacing:.05em">📡 Mes adresses IP actuelles</span>
           <button class="btn btn-sm btn-primary" onclick="detectMyIPs()">🔄 Détecter</button>
         </div>
         <div id="myip-results" style="margin-top:10px;font-size:13px;color:var(--gris-texte)">Cliquez sur "Détecter" pour récupérer vos adresses.</div>
       </div>
-
-      <!-- Bloc "Analyser une IP" -->
       <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
-        <div class="form-group" style="flex:1;min-width:220px">
-          <label>Adresse IP à localiser</label>
-          <input type="text" id="ip-input" placeholder="ex: 8.8.8.8 ou 2001:4860:4860::8888">
-        </div>
+        <div class="form-group" style="flex:1;min-width:220px"><label>Adresse IP à localiser</label><input type="text" id="ip-input" placeholder="ex: 8.8.8.8 ou 2001:4860:4860::8888"></div>
         <button class="btn btn-primary" onclick="lookupIP()">🔎 Localiser</button>
       </div>
-      <div class="loader" id="loader-ip"><div class="spinner"></div> Interrogation des serveurs...</div>
+      <div class="loader" id="loader-ip"><div class="spinner"></div> Interrogation de ip-api.com...</div>
       <div class="result-box" id="res-ip"></div>
     </div>
   </div>
 
-  <!-- ─── SECTION 3 : WAYBACK ─── -->
+  <!-- WAYBACK -->
   <div class="section-card" id="sec-wayback">
     <div class="card-header">
       <div class="card-icon">🕰️</div>
-      <div class="card-header-text">
-        <h2>Archives Web — Wayback Machine</h2>
-        <p>Consultation des captures historiques d'un site via l'API Internet Archive CDX</p>
-      </div>
+      <div class="card-header-text"><h2>Archives Web — Wayback Machine</h2><p>Captures historiques via l'API Internet Archive CDX</p></div>
     </div>
     <div class="card-body">
       <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
-        <div class="form-group" style="flex:1;min-width:280px">
-          <label>URL du site cible</label>
-          <input type="text" id="wayback-url" placeholder="ex: https://www.lemonde.fr">
-        </div>
-        <div class="form-group">
-          <label>Limite de résultats</label>
-          <select id="wayback-limit">
-            <option value="5">5 captures</option>
-            <option value="10" selected>10 captures</option>
-            <option value="20">20 captures</option>
-          </select>
-        </div>
+        <div class="form-group" style="flex:1;min-width:280px"><label>URL du site cible</label><input type="text" id="wayback-url" placeholder="ex: https://www.lemonde.fr"></div>
+        <div class="form-group"><label>Nombre</label><select id="wayback-limit"><option value="5">5</option><option value="10" selected>10</option><option value="20">20</option><option value="50">50</option></select></div>
+        <div class="form-group"><label>Ordre</label><select id="wayback-order"><option value="last">Les plus récentes</option><option value="first">Les plus anciennes</option></select></div>
+        <div class="form-group"><label>Année min</label><input type="number" id="wayback-from" placeholder="ex: 2010" min="1996" max="2026" style="width:110px"></div>
+        <div class="form-group"><label>Année max</label><input type="number" id="wayback-to" placeholder="ex: 2024" min="1996" max="2026" style="width:110px"></div>
         <button class="btn btn-primary" onclick="lookupWayback()">📚 Rechercher</button>
       </div>
       <div class="loader" id="loader-wb"><div class="spinner"></div> Interrogation de l'Internet Archive...</div>
@@ -679,17 +175,14 @@
     </div>
   </div>
 
-  <!-- ─── SECTION 4 : DORKING ─── -->
+  <!-- DORKING -->
   <div class="section-card" id="sec-dorking">
     <div class="card-header">
       <div class="card-icon">🔍</div>
-      <div class="card-header-text">
-        <h2>Google Dorking — OSINT Avancé</h2>
-        <p>Construction de requêtes de recherche avancées pour l'investigation numérique</p>
-      </div>
+      <div class="card-header-text"><h2>Google Dorking — Recherche avancée</h2><p>Construction de requêtes pour l'investigation numérique</p></div>
     </div>
     <div class="card-body">
-      <p style="font-size:12.5px;color:var(--gris-texte);margin-bottom:16px">Cliquez sur un opérateur pour l'ajouter à la requête :</p>
+      <p style="font-size:12.5px;color:var(--gris-texte);margin-bottom:14px">Cliquez sur un opérateur pour l'insérer :</p>
       <div class="dork-grid">
         <button class="dork-btn" onclick="addDork('site:')">site:</button>
         <button class="dork-btn" onclick="addDork('inurl:')">inurl:</button>
@@ -697,904 +190,334 @@
         <button class="dork-btn" onclick="addDork('intext:')">intext:</button>
         <button class="dork-btn" onclick="addDork('filetype:pdf')">filetype:pdf</button>
         <button class="dork-btn" onclick="addDork('filetype:xls')">filetype:xls</button>
-        <button class="dork-btn" onclick="addDork('filetype:docx')">filetype:docx</button>
         <button class="dork-btn" onclick="addDork('filetype:sql')">filetype:sql</button>
         <button class="dork-btn" onclick="addDork('cache:')">cache:</button>
         <button class="dork-btn" onclick="addDork('related:')">related:</button>
-        <button class="dork-btn" onclick="addDork('link:')">link:</button>
-        <button class="dork-btn" onclick="addDork('"index of"')">"index of"</button>
+        <button class="dork-btn" onclick='addDork("&quot;index of&quot;")'>"index of"</button>
         <button class="dork-btn" onclick="addDork('ext:log')">ext:log</button>
         <button class="dork-btn" onclick="addDork('ext:env')">ext:.env</button>
         <button class="dork-btn" onclick="addDork('allinurl:')">allinurl:</button>
         <button class="dork-btn" onclick="addDork('allintitle:')">allintitle:</button>
       </div>
-      <div class="form-group" style="margin-bottom:14px">
-        <label>Requête construite</label>
-        <input id="dork-query" type="text" placeholder='ex: site:gov.fr filetype:pdf "confidentiel"'>
-      </div>
+      <div class="form-group" style="margin-bottom:14px"><label>Requête construite</label><input id="dork-query" type="text" placeholder='ex: site:gov.fr filetype:pdf "rapport annuel"'></div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="executeDork()">🚀 Lancer sur Google</button>
-        <button class="btn btn-primary" style="background:#1a73e8" onclick="executeDorkBing()">🔍 Bing</button>
-        <button class="btn" style="background:var(--gris-moyen);color:var(--noir)" onclick="document.getElementById('dork-query').value=''">🗑️ Effacer</button>
+        <button class="btn btn-primary" onclick="executeDork('google')">🚀 Google</button>
+        <button class="btn btn-primary" style="background:#1a73e8" onclick="executeDork('bing')">🔍 Bing</button>
+        <button class="btn btn-neutral" onclick="document.getElementById('dork-query').value=''">🗑️ Effacer</button>
       </div>
-      <div style="margin-top:18px;background:var(--gris-clair);border:1px solid var(--gris-moyen);border-left:4px solid var(--orange);padding:12px 16px;border-radius:2px">
-        <p style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:6px">📖 EXEMPLES DE REQUÊTES UTILES</p>
-        <div style="font-size:12px;color:var(--gris-texte);line-height:1.8">
-          <div onclick="setDork('site:pastebin.com email passwords')" style="cursor:pointer;color:var(--bleu);hover:underline">→ site:pastebin.com email passwords</div>
+      <div style="margin-top:18px;background:#fffbeb;border:1px solid #fde68a;border-left:4px solid var(--orange);padding:12px 16px;border-radius:6px">
+        <p style="font-size:12px;font-weight:700;color:var(--orange);margin-bottom:8px">📖 EXEMPLES</p>
+        <div style="font-size:12px;color:var(--gris-texte);line-height:2.2">
+          <div onclick="setDork('site:gov.fr filetype:pdf rapport')" style="cursor:pointer;color:var(--bleu)">→ site:gov.fr filetype:pdf rapport</div>
           <div onclick="setDork('inurl:/admin/login.php')" style="cursor:pointer;color:var(--bleu)">→ inurl:/admin/login.php</div>
           <div onclick="setDork('filetype:sql intext:INSERT INTO')" style="cursor:pointer;color:var(--bleu)">→ filetype:sql intext:INSERT INTO</div>
-          <div onclick="setDork('site:linkedin.com intitle:\"directeur\" \"Paris\"')" style="cursor:pointer;color:var(--bleu)">→ site:linkedin.com intitle:"directeur" "Paris"</div>
+          <div onclick="setDork('site:linkedin.com intitle:directeur Paris')" style="cursor:pointer;color:var(--bleu)">→ site:linkedin.com intitle:directeur Paris</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ─── SECTION 5 : EMAIL ─── -->
+  <!-- EMAIL -->
   <div class="section-card" id="sec-email">
     <div class="card-header">
       <div class="card-icon">📧</div>
-      <div class="card-header-text">
-        <h2>Trace Email — Empreinte numérique</h2>
-        <p>Vérification des services sur lesquels une adresse email est enregistrée</p>
-      </div>
+      <div class="card-header-text"><h2>Trace Email — Empreinte numérique</h2><p>Analyse du domaine et liens de recherche publics</p></div>
     </div>
     <div class="card-body">
       <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
-        <div class="form-group" style="flex:1;min-width:280px">
-          <label>Adresse email cible</label>
-          <input type="email" id="email-input" placeholder="exemple@domaine.com">
-        </div>
-        <button class="btn btn-primary" onclick="lookupEmail()">🔎 Tracer</button>
+        <div class="form-group" style="flex:1;min-width:280px"><label>Adresse email cible</label><input type="email" id="email-input" placeholder="exemple@domaine.com"></div>
+        <button class="btn btn-primary" onclick="lookupEmail()">🔎 Analyser</button>
       </div>
-      <div class="loader" id="loader-email"><div class="spinner"></div> Interrogation des bases de données...</div>
       <div class="result-box" id="res-email"></div>
     </div>
   </div>
 
-  <!-- ─── SECTION 6 : METADATA ─── -->
+  <!-- METADATA -->
   <div class="section-card" id="sec-metadata">
     <div class="card-header">
       <div class="card-icon">🖼️</div>
-      <div class="card-header-text">
-        <h2>Extraction de métadonnées — Analyse EXIF</h2>
-        <p>Analyse des données EXIF et métadonnées embarquées dans une image</p>
-      </div>
+      <div class="card-header-text"><h2>Extraction de métadonnées — Analyse EXIF</h2><p>Traitement 100% local — aucune donnée envoyée vers un serveur</p></div>
     </div>
     <div class="card-body">
-      <div class="face-zone" id="meta-drop" onclick="document.getElementById('meta-file').click()" ondragover="event.preventDefault();this.classList.add('dragging')" ondragleave="this.classList.remove('dragging')" ondrop="handleMetaDrop(event)">
-        <div style="font-size:36px">🖼️</div>
+      <div class="drop-zone" id="meta-drop" onclick="document.getElementById('meta-file').click()" ondragover="event.preventDefault();this.classList.add('dragging')" ondragleave="this.classList.remove('dragging')" ondrop="handleMetaDrop(event)">
+        <div style="font-size:40px">🖼️</div>
         <p><strong>Cliquez ou glissez une image ici</strong></p>
-        <p>Formats supportés : JPG, JPEG, PNG, TIFF, HEIC</p>
+        <p>Formats : JPG, JPEG, PNG, TIFF — Traitement local</p>
         <input type="file" id="meta-file" accept="image/*" style="display:none" onchange="analyzeMetadata(this.files[0])">
       </div>
-      <img id="meta-preview" style="max-width:200px;max-height:200px;margin:12px 0;border:2px solid var(--bleu);border-radius:4px;display:none">
+      <img id="meta-preview" style="max-width:200px;max-height:200px;margin:14px 0;border:2px solid var(--bleu);border-radius:8px;display:none">
       <div class="loader" id="loader-meta"><div class="spinner"></div> Extraction des métadonnées...</div>
       <div class="result-box" id="res-metadata"></div>
     </div>
   </div>
-
 </main>
 
-<!-- ─── FOOTER ─── -->
-<div class="footer">
-  SIRENE — Système d'Information de Renseignement et d'Enquête Nationale &nbsp;|&nbsp; Ministère de l'Intérieur &nbsp;|&nbsp; 
-  Usage strictement réservé aux agents habilités &nbsp;|&nbsp; 
-  <a href="#">Mentions légales</a> &nbsp;|&nbsp; 
-  <a href="#">Protection des données</a>
-</div>
+<div class="footer">Outil OSINT — Sources ouvertes uniquement &nbsp;|&nbsp; APIs publiques gratuites &nbsp;|&nbsp; Usage éducatif</div>
 
 <script>
-// ─── NAVIGATION ───
-function showSection(name, clickedEl) {
-  document.querySelectorAll('.section-card').forEach(c => c.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.querySelectorAll('.sec-btn').forEach(n => n.classList.remove('active'));
-  const sec = document.getElementById('sec-' + name);
-  if (sec) sec.classList.add('active');
-  // Mark the clicked nav element as active
-  if (clickedEl) {
-    clickedEl.classList.add('active');
-    // Also sync sec-btn if there is one for this section
-    const secBtn = document.querySelector(`.sec-btn[data-section="${name}"]`);
-    if (secBtn) secBtn.classList.add('active');
-  }
+function showSection(name,el){
+  document.querySelectorAll('.section-card').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const sec=document.getElementById('sec-'+name);
+  if(sec)sec.classList.add('active');
+  if(el)el.classList.add('active');
 }
+function row(k,v){return`<div class="result-row"><span class="result-key">${k}</span><span class="result-val">${v}</span></div>`}
+function showResult(id,html){const el=document.getElementById(id);el.innerHTML=html;el.classList.add('show')}
+function hideResult(id){document.getElementById(id).classList.remove('show')}
+function showLoader(id){document.getElementById(id).classList.add('show')}
+function hideLoader(id){document.getElementById(id).classList.remove('show')}
+function formatSize(b){if(b<1024)return b+' o';if(b<1048576)return(b/1024).toFixed(1)+' Ko';return(b/1048576).toFixed(2)+' Mo'}
 
-// ─── FACE AUTH ───
-let authStream = null;
-async function startFaceAuth() {
-  const btn = document.getElementById('auth-btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Démarrage...';
-  try {
-    authStream = await navigator.mediaDevices.getUserMedia({ video: true });
-    const video = document.getElementById('auth-video');
-    video.srcObject = authStream;
-    video.style.display = 'block';
-    document.getElementById('cam-placeholder').style.display = 'none';
-    document.getElementById('scan-line').style.display = 'block';
-    const bar = document.getElementById('progress-bar');
-    const fill = document.getElementById('progress-fill');
-    const status = document.getElementById('auth-status');
-    bar.style.display = 'block';
-    const steps = [
-      [0, 500, "Détection du visage..."],
-      [25, 800, "Analyse biométrique..."],
-      [50, 800, "Vérification de l'iris..."],
-      [75, 600, "Contrôle de la base FACIE..."],
-      [95, 400, "Validation de l'accréditation..."],
-    ];
-    let delay = 0;
-    for (const [pct, wait, msg] of steps) {
-      await new Promise(r => setTimeout(() => { fill.style.width = pct+'%'; status.textContent = msg; r(); }, delay));
-      delay += wait;
-    }
-    await new Promise(r => setTimeout(r, delay));
-    fill.style.width = '100%';
-    status.textContent = "✅ Identité confirmée — Accès autorisé";
-    if (authStream) authStream.getTracks().forEach(t => t.stop());
-    await new Promise(r => setTimeout(r, 900));
-    const overlay = document.getElementById('auth-overlay');
-    overlay.style.opacity = '0';
-    await new Promise(r => setTimeout(r, 400));
-    overlay.style.display = 'none';
-  } catch(e) {
-    document.getElementById('auth-status').textContent = "⚠️ Caméra non disponible — Mode dégradé";
-    btn.disabled = false; btn.innerHTML = '<span>🔓</span> Accès en mode dégradé';
-    btn.onclick = () => { document.getElementById('auth-overlay').style.display='none'; };
-  }
+// IDENTITÉ
+function formatImmat(el){
+  let v=el.value.replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
+  if(v.length>2&&v.length<=5)v=v.slice(0,2)+'-'+v.slice(2);
+  if(v.length>6)v=v.slice(0,6)+'-'+v.slice(6,8);
+  el.value=v;
 }
-
-// ─── ONGLETS IDENTITÉ ───
-function switchIdTab(tab) {
-  document.getElementById('panel-brix').style.display   = tab === 'brix'   ? 'block' : 'none';
-  document.getElementById('panel-manuel').style.display = tab === 'manuel' ? 'block' : 'none';
-  document.getElementById('tab-brix').style.color       = tab === 'brix'   ? 'var(--bleu)' : 'var(--gris-texte)';
-  document.getElementById('tab-manuel').style.color     = tab === 'manuel' ? 'var(--bleu)' : 'var(--gris-texte)';
-  document.getElementById('tab-brix').style.borderBottomColor   = tab === 'brix'   ? 'var(--bleu)' : 'transparent';
-  document.getElementById('tab-manuel').style.borderBottomColor = tab === 'manuel' ? 'var(--bleu)' : 'transparent';
-}
-
-// ─── BRIXHUB API ───
-const BRIX_API_KEY = 'brix_tGK8pY3BiGs4O09NMqJ_7p8GOAkbtldRricwTx7ZlUZs9uKW';
-let currentBrixMode = 'name';
-
-function setBrixMode(mode) {
-  currentBrixMode = mode;
-  document.querySelectorAll('.brix-mode-btn').forEach(b => {
-    b.style.background = 'white';
-    b.style.color = 'var(--bleu)';
-    b.style.borderColor = 'var(--gris-moyen)';
-  });
-  const active = document.getElementById('bmode-' + mode);
-  if (active) { active.style.background = 'var(--bleu)'; active.style.color = 'white'; active.style.borderColor = 'var(--bleu)'; }
-  document.querySelectorAll('.brix-fields').forEach(f => f.style.display = 'none');
-  const fields = document.getElementById('brix-fields-' + mode);
-  if (fields) fields.style.display = 'block';
-}
-
-async function searchBrixHub() {
-  const mode = currentBrixMode;
-  let body = {};
-
-  if (mode === 'name') {
-    const nom    = document.getElementById('brix-nom').value.trim();
-    const prenom = document.getElementById('brix-prenom').value.trim();
-    if (!nom && !prenom) { alert('Veuillez renseigner au moins le nom ou le prénom.'); return; }
-    if (nom)    body.last_name  = nom;
-    if (prenom) body.first_name = prenom;
-  } else if (mode === 'email') {
-    const email = document.getElementById('brix-email').value.trim();
-    if (!email) { alert('Veuillez entrer une adresse email.'); return; }
-    body.email = email;
-  } else if (mode === 'phone') {
-    const phone = document.getElementById('brix-phone').value.trim();
-    if (!phone) { alert('Veuillez entrer un numéro de téléphone.'); return; }
-    body.phone = phone;
-  } else if (mode === 'username') {
-    const username = document.getElementById('brix-username').value.trim();
-    if (!username) { alert('Veuillez entrer un nom d\'utilisateur.'); return; }
-    body.username = username;
-  } else if (mode === 'ip') {
-    const ip = document.getElementById('brix-ip-search').value.trim();
-    if (!ip) { alert('Veuillez entrer une adresse IP.'); return; }
-    body.ip = ip;
-  }
-
-  showLoader('loader-brix');
-  hideResult('res-brix');
-
-  try {
-    const response = await fetch('https://brixhub.net/api/v1/search', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': BRIX_API_KEY
-      },
-      body: JSON.stringify(body)
-    });
-
-    hideLoader('loader-brix');
-
-    if (!response.ok) {
-      const errText = await response.text().catch(() => '');
-      let errMsg = `Erreur HTTP ${response.status}`;
-      try { const j = JSON.parse(errText); errMsg = j.message || j.error || errMsg; } catch {}
-      showResult('res-brix', `<div style="color:var(--rouge)">❌ ${errMsg}</div>`);
-      return;
-    }
-
-    const data = await response.json();
-    renderBrixResults(data);
-
-  } catch (e) {
-    hideLoader('loader-brix');
-    showResult('res-brix', `<div style="color:var(--rouge)">❌ Erreur réseau : ${e.message}</div>`);
-  }
-}
-
-function renderBrixResults(data) {
-  // Supporte { total, results } ou tableau direct ou { data }
-  let results = [];
-  let total = 0;
-  if (Array.isArray(data)) {
-    results = data; total = data.length;
-  } else if (data.results) {
-    results = data.results; total = data.total || results.length;
-  } else if (data.data) {
-    results = Array.isArray(data.data) ? data.data : [data.data]; total = results.length;
-  } else if (typeof data === 'object' && data !== null) {
-    // Réponse à un seul objet
-    results = [data]; total = 1;
-  }
-
-  if (!results || results.length === 0) {
-    showResult('res-brix', `
-      <div style="color:var(--orange);font-size:13px">
-        ⚠️ Aucun résultat trouvé dans la base BrixHub pour ces critères.
-      </div>`);
-    return;
-  }
-
-  const badge = `<span style="background:var(--vert-ok);color:white;padding:3px 10px;font-size:11px;font-weight:700;border-radius:2px">${total} résultat(s)</span>`;
-
-  const cards = results.map((r, i) => {
-    // Construire les lignes dynamiquement selon les champs disponibles
-    const fieldMap = [
-      ['first_name',  'Prénom'],
-      ['last_name',   'Nom'],
-      ['name',        'Nom complet'],
-      ['email',       'Email'],
-      ['emails',      'Emails'],
-      ['phone',       'Téléphone'],
-      ['phones',      'Téléphones'],
-      ['username',    'Username'],
-      ['usernames',   'Usernames'],
-      ['address',     'Adresse'],
-      ['city',        'Ville'],
-      ['country',     'Pays'],
-      ['ip',          'IP'],
-      ['password',    'Mot de passe (hash)'],
-      ['hash',        'Hash'],
-      ['breach',      'Fuite de données'],
-      ['source',      'Source'],
-      ['database',    'Base de données'],
-      ['date',        'Date'],
-      ['id',          'ID'],
-    ];
-
-    let rows = '';
-    for (const [key, label] of fieldMap) {
-      if (r[key] === undefined || r[key] === null || r[key] === '') continue;
-      let val = r[key];
-      if (Array.isArray(val)) val = val.join(', ');
-      else if (typeof val === 'object') val = JSON.stringify(val);
-      rows += row(label, String(val));
-    }
-    // Champs non mappés
-    const mappedKeys = new Set(fieldMap.map(f => f[0]));
-    for (const [k, v] of Object.entries(r)) {
-      if (mappedKeys.has(k) || v === null || v === '') continue;
-      let val = Array.isArray(v) ? v.join(', ') : (typeof v === 'object' ? JSON.stringify(v) : String(v));
-      rows += row(k, val);
-    }
-
-    return `
-      <div style="border:1px solid var(--gris-moyen);border-left:4px solid var(--bleu-clair);border-radius:2px;padding:14px 16px;margin-bottom:12px;background:white">
-        <div style="font-size:11px;font-weight:700;color:var(--bleu);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">
-          📁 Entrée #${i+1}
-        </div>
-        ${rows || '<span style="color:var(--gris-texte);font-size:12px">Aucun champ extractible</span>'}
-      </div>`;
-  }).join('');
-
-  const html = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <span style="font-size:13px;font-weight:700;color:var(--bleu)">RÉSULTATS BRIXHUB</span>
-      ${badge}
-    </div>
-    ${cards}
-    <div style="font-size:11px;color:var(--gris-texte);margin-top:6px;border-top:1px solid var(--gris-moyen);padding-top:8px">
-      Source : BrixHub OSINT API — ${new Date().toLocaleString('fr-FR')}
-    </div>`;
-
-  showResult('res-brix', html);
-}
-
-function clearBrix() {
-  ['brix-nom','brix-prenom','brix-email','brix-phone','brix-username','brix-ip-search'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  hideResult('res-brix');
-}
-
-// ─── SECTION IDENTITÉ ───
-function formatImmat(el) {
-  let v = el.value.replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
-  if(v.length > 2 && v.length <= 5) v = v.slice(0,2)+'-'+v.slice(2);
-  if(v.length > 6) v = v.slice(0,6)+'-'+v.slice(6,8);
-  el.value = v;
-}
-function generateFiche() {
-  const nom = document.getElementById('nom').value.trim().toUpperCase();
-  const prenom = document.getElementById('prenom').value.trim();
-  const dob = document.getElementById('dob').value;
-  const immat = document.getElementById('immat').value.trim().toUpperCase();
-  const adresse = document.getElementById('adresse').value.trim();
-  const cp = document.getElementById('cp').value.trim();
-  const ville = document.getElementById('ville').value.trim().toUpperCase();
-  if (!nom && !prenom) { alert('Veuillez renseigner au moins le nom ou le prénom.'); return; }
-  const age = dob ? Math.floor((new Date() - new Date(dob)) / 31557600000) : null;
-  const ref = 'FIC-' + Math.random().toString(36).substr(2,6).toUpperCase() + '-' + new Date().getFullYear();
-  const html = `
+function generateFiche(){
+  const nom=document.getElementById('nom').value.trim().toUpperCase();
+  const prenom=document.getElementById('prenom').value.trim();
+  const dob=document.getElementById('dob').value;
+  const immat=document.getElementById('immat').value.trim().toUpperCase();
+  const adresse=document.getElementById('adresse').value.trim();
+  const cp=document.getElementById('cp').value.trim();
+  const ville=document.getElementById('ville').value.trim().toUpperCase();
+  if(!nom&&!prenom){alert('Veuillez renseigner au moins le nom ou le prénom.');return}
+  const age=dob?Math.floor((new Date()-new Date(dob))/31557600000):null;
+  const ref='FIC-'+Math.random().toString(36).substr(2,6).toUpperCase()+'-'+new Date().getFullYear();
+  showResult('res-identite',`
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <span style="font-size:14px;font-weight:700;color:var(--bleu)">FICHE D'IDENTITÉ</span>
-      <span style="background:var(--vert-ok);color:white;padding:3px 10px;font-size:11px;font-weight:700;border-radius:2px">ENREGISTRÉE</span>
+      <span class="tag tag-green">✅ Générée</span>
     </div>
-    ${row('Référence dossier', `<code>${ref}</code>`)}
-    ${nom ? row('Nom', `<strong>${nom}</strong>`) : ''}
-    ${prenom ? row('Prénom(s)', prenom) : ''}
-    ${dob ? row('Date de naissance', new Date(dob).toLocaleDateString('fr-FR') + (age ? ` (${age} ans)` : '')) : ''}
-    ${immat ? row('Immatriculation', `<code>${immat}</code>`) : ''}
-    ${adresse ? row('Adresse', adresse) : ''}
-    ${cp || ville ? row('Code postal / Ville', [cp,ville].filter(Boolean).join(' — ')) : ''}
-    ${row('Horodatage', new Date().toLocaleString('fr-FR'))}
-  `;
-  showResult('res-identite', html);
+    ${row('Référence','<code>'+ref+'</code>')}
+    ${nom?row('Nom','<strong>'+nom+'</strong>'):''}
+    ${prenom?row('Prénom(s)',prenom):''}
+    ${dob?row('Date de naissance',new Date(dob).toLocaleDateString('fr-FR')+(age?' — '+age+' ans':'')):''}
+    ${immat?row('Immatriculation','<code>'+immat+'</code>'):''}
+    ${adresse?row('Adresse',adresse):''}
+    ${cp||ville?row('Code postal / Ville',[cp,ville].filter(Boolean).join(' — ')):''}
+    ${row('Horodatage',new Date().toLocaleString('fr-FR'))}
+  `);
 }
-function clearFiche() {
-  ['nom','prenom','dob','immat','adresse','cp','ville'].forEach(id => document.getElementById(id).value='');
-  document.getElementById('res-identite').classList.remove('show');
+function clearFiche(){
+  ['nom','prenom','dob','immat','adresse','cp','ville'].forEach(id=>document.getElementById(id).value='');
+  hideResult('res-identite');
 }
 
-// ─── IP LOOKUP ───
-async function lookupIP() {
-  const ip = document.getElementById('ip-input').value.trim();
-  if (!ip) { alert('Veuillez entrer une adresse IP.'); return; }
-  showLoader('loader-ip'); hideResult('res-ip');
-  try {
-    // ip-api.com : gratuit, CORS ok, supporte IPv4 + IPv6
-    const r = await fetch(`https://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,message,country,countryCode,regionName,city,zip,lat,lon,timezone,isp,org,as,asname,mobile,proxy,hosting,query`);
-    const d = await r.json();
+// IP LOOKUP — ip-api.com supporte CORS nativement
+async function lookupIP(){
+  const ip=document.getElementById('ip-input').value.trim();
+  if(!ip){alert('Veuillez entrer une adresse IP.');return}
+  showLoader('loader-ip');hideResult('res-ip');
+  try{
+    // ipapi.is : HTTPS natif, CORS ok, IPv4 + IPv6
+    const r=await fetch('https://api.ipapi.is/?ip='+encodeURIComponent(ip));
+    const d=await r.json();
     hideLoader('loader-ip');
-    if (d.status === 'fail') { showResult('res-ip', `<div style="color:var(--rouge)">❌ Erreur : ${d.message || 'Adresse IP invalide ou privée'}</div>`); return; }
-    const mapUrl = `https://www.openstreetmap.org/?mlat=${d.lat}&mlon=${d.lon}#map=12/${d.lat}/${d.lon}`;
-    const typeFlags = [
-      d.mobile ? '<span class="tag orange">📱 Mobile</span>' : '',
-      d.proxy  ? '<span class="tag red">🔒 Proxy/VPN</span>' : '',
-      d.hosting? '<span class="tag" style="background:#555">🖥️ Hébergement/DC</span>' : '',
-    ].filter(Boolean).join(' ') || '<span class="tag green">✅ Résidentiel</span>';
-    const html = `
-      ${row('Adresse IP', `<code>${d.query}</code>`)}
-      ${row('Type de connexion', typeFlags)}
-      ${row('Pays', `🏳️ ${d.country || '—'} (${d.countryCode || '—'})`)}
-      ${row('Région', d.regionName || '—')}
-      ${row('Ville', d.city || '—')}
-      ${row('Code postal', d.zip || '—')}
-      ${d.lat && d.lon ? row('Coordonnées GPS', `${d.lat}, ${d.lon} &nbsp;—&nbsp; <a href="${mapUrl}" target="_blank" style="color:var(--bleu)">Voir sur la carte →</a>`) : ''}
-      ${row('Fuseau horaire', d.timezone || '—')}
-      ${row('FAI / Opérateur', d.isp || '—')}
-      ${row('Organisation', d.org || '—')}
-      ${row('AS (Autonomous System)', `${d.as || '—'}${d.asname ? ' — ' + d.asname : ''}`)}
-    `;
-    showResult('res-ip', html);
-  } catch(e) {
+    if(d.error){showResult('res-ip','<div style="color:var(--rouge)">❌ '+(d.error||'Adresse IP invalide')+'</div>');return}
+    const loc=d.location||{};
+    const as=d.asn||d.as||{};
+    const lat=loc.latitude,lon=loc.longitude;
+    const mapUrl='https://www.openstreetmap.org/?mlat='+lat+'&mlon='+lon+'#map=12/'+lat+'/'+lon;
+    const fai=as.org||as.descr||as.name||'—';
+    const orgName=as.descr||as.org||as.name||'—';
+    const asnNum=as.asn||as.number||'—';
+    showResult('res-ip',`
+      ${row('Adresse IP','<code>'+d.ip+'</code>')}
+      ${row('Type',d.is_mobile?'<span class="tag tag-orange">📱 Mobile</span>':d.is_proxy||d.is_vpn?'<span class="tag tag-red">🔒 Proxy/VPN</span>':d.is_datacenter?'<span class="tag tag-orange">🖥️ Datacenter</span>':'<span class="tag tag-green">✅ Résidentiel</span>')}
+      ${row('Pays',(loc.country||'—')+' ('+(loc.country_code||'—')+')')}
+      ${row('Région',loc.state||'—')}
+      ${row('Ville',loc.city||'—')}
+      ${row('Code postal',loc.zip||'—')}
+      ${lat&&lon?row('Coordonnées GPS',lat+', '+lon+' &nbsp;—&nbsp; <a href="'+mapUrl+'" target="_blank" style="color:var(--bleu)">Voir sur la carte →</a>'):''}
+      ${row('Fuseau horaire',loc.timezone||'—')}
+      ${row('FAI / Opérateur',fai)}
+      ${row('Organisation',orgName)}
+      ${row('ASN',asnNum!=='—'?'AS'+asnNum:'—')}
+      ${as.type?row('Type ASN',as.type):''}
+      ${as.domain?row('Domaine ASN',as.domain):''}
+    `);
+  }catch(e){
     hideLoader('loader-ip');
-    showResult('res-ip', `<div style="color:var(--rouge)">❌ Erreur réseau. Vérifiez votre connexion.</div>`);
+    showResult('res-ip','<div style="color:var(--rouge)">❌ Erreur réseau : '+e.message+'</div>');
   }
 }
 
-// Détecte simultanément IPv4 et IPv6 via des APIs dédiées
-async function detectMyIPs() {
-  const el = document.getElementById('myip-results');
-  el.innerHTML = '<span style="color:var(--bleu)">⏳ Détection en cours...</span>';
-
-  const timeout = (ms) => new Promise((_,r) => setTimeout(() => r(new Error('timeout')), ms));
-  const safeFetch = async (url, extract) => {
-    try {
-      const res = await Promise.race([fetch(url), timeout(5000)]);
-      const data = await res.json();
-      return extract(data);
-    } catch { return null; }
-  };
-
-  // IPv4 : forcer IPv4 via api4.ipify.org
-  // IPv6 : forcer IPv6 via api6.ipify.org (retourne null si pas d'IPv6)
-  const [ipv4, ipv6] = await Promise.all([
-    safeFetch('https://api4.ipify.org?format=json', d => d.ip),
-    safeFetch('https://api6.ipify.org?format=json', d => d.ip),
+async function detectMyIPs(){
+  const el=document.getElementById('myip-results');
+  el.innerHTML='<span style="color:var(--bleu)">⏳ Détection en cours...</span>';
+  const timeout=ms=>new Promise((_,r)=>setTimeout(()=>r(new Error('timeout')),ms));
+  const safe=async(url,fn)=>{try{const res=await Promise.race([fetch(url),timeout(5000)]);return fn(await res.json())}catch{return null}};
+  const[ipv4,ipv6]=await Promise.all([
+    safe('https://api4.ipify.org?format=json',d=>d.ip),
+    (async()=>{const r=await safe('https://api6.ipify.org?format=json',d=>d.ip);if(r)return r;return await safe('https://api.allorigins.win/get?url='+encodeURIComponent('https://api6.ipify.org?format=json'),d=>{try{return JSON.parse(d.contents).ip}catch{return null}});})(),
   ]);
-
-  let html = '';
-  if (ipv4) {
-    html += `<div style="margin-top:6px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <span style="font-weight:700;color:var(--bleu);min-width:60px;font-size:12px">IPv4</span>
-      <code style="background:#e8eef8;padding:3px 10px;border-radius:2px;font-size:13px">${ipv4}</code>
-      <button class="btn btn-sm btn-primary" onclick="document.getElementById('ip-input').value='${ipv4}';lookupIP()">Localiser →</button>
-    </div>`;
-  } else {
-    html += `<div style="margin-top:6px;color:var(--gris-texte);font-size:12px">IPv4 — Non disponible</div>`;
-  }
-
-  if (ipv6) {
-    html += `<div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <span style="font-weight:700;color:var(--bleu);min-width:60px;font-size:12px">IPv6</span>
-      <code style="background:#e8eef8;padding:3px 10px;border-radius:2px;font-size:12px;word-break:break-all">${ipv6}</code>
-      <button class="btn btn-sm btn-primary" onclick="document.getElementById('ip-input').value='${ipv6}';lookupIP()">Localiser →</button>
-    </div>`;
-  } else {
-    html += `<div style="margin-top:8px;color:var(--gris-texte);font-size:12px">IPv6 — Non disponible (connexion sans IPv6 ou IPv6 désactivé)</div>`;
-  }
-
-  if (!ipv4 && !ipv6) {
-    html = '<span style="color:var(--rouge)">❌ Impossible de détecter votre IP. Vérifiez votre connexion.</span>';
-  }
-
-  el.innerHTML = html;
+  let html='';
+  if(ipv4)html+=`<div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-weight:700;color:var(--bleu);min-width:55px;font-size:12px">IPv4</span><code style="background:#e0eaff;padding:3px 10px;border-radius:4px;font-size:13px">${ipv4}</code><button class="btn btn-sm btn-primary" onclick="document.getElementById('ip-input').value='${ipv4}';lookupIP()">Localiser →</button></div>`;
+  if(ipv6)html+=`<div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-weight:700;color:var(--bleu);min-width:55px;font-size:12px">IPv6</span><code style="background:#e0eaff;padding:3px 10px;border-radius:4px;font-size:12px;word-break:break-all">${ipv6}</code><button class="btn btn-sm btn-primary" onclick="document.getElementById('ip-input').value='${ipv6}';lookupIP()">Localiser →</button></div>`;
+  if(!html)html='<span style="color:var(--rouge)">❌ Impossible de détecter votre IP.</span>';
+  el.innerHTML=html;
 }
 
-function isPublicIP(ip) {
-  if (!ip) return false;
-  if (ip.includes(':')) return true; // IPv6
-  const parts = ip.split('.').map(Number);
-  if (parts[0] === 10) return false;
-  if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return false;
-  if (parts[0] === 192 && parts[1] === 168) return false;
-  if (parts[0] === 127) return false;
-  return true;
-}
-
-// ─── WAYBACK ───
-async function lookupWayback() {
-  let url = document.getElementById('wayback-url').value.trim();
-  if (!url) { alert('Veuillez entrer une URL.'); return; }
-
-  // Normaliser : retirer le protocole pour la recherche CDX (l'API accepte sans protocole)
-  const cleanUrl = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
-  const limit = document.getElementById('wayback-limit').value;
-
-  showLoader('loader-wb'); hideResult('res-wayback');
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 20000);
-
-  try {
-    // Recherche sur http:// ET https:// via matchType=prefix, on cherche l'URL exacte
-    // output=json, fl=timestamp,original,statuscode,mimetype
-    const api = `https://web.archive.org/cdx/search/cdx?url=${encodeURIComponent(cleanUrl)}&output=json&fl=timestamp,original,statuscode,mimetype&limit=${limit}&collapse=timestamp:8&matchType=domain`;
-
-    const r = await fetch(api, {
-      signal: controller.signal,
-      headers: { 'Accept': 'application/json' }
-    });
-    clearTimeout(timeoutId);
-
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const data = await r.json();
-
+// WAYBACK
+let wbController=null;
+async function lookupWayback(){
+  let url=document.getElementById('wayback-url').value.trim();
+  if(!url){alert('Veuillez entrer une URL.');return}
+  const cleanUrl=url.replace(/^https?:\/\//,'').replace(/\/$/,'');
+  const limit=parseInt(document.getElementById('wayback-limit').value);
+  const order=document.getElementById('wayback-order').value;
+  const fromY=document.getElementById('wayback-from').value.trim();
+  const toY=document.getElementById('wayback-to').value.trim();
+  if(wbController){wbController.abort();wbController=null;}
+  wbController=new AbortController();
+  const signal=wbController.signal;
+  showLoader('loader-wb');hideResult('res-wayback');
+  const tid=setTimeout(()=>{if(wbController)wbController.abort();},30000);
+  try{
+    // URL CDX simple et courte — pas d'encodeURIComponent sur cleanUrl (pas besoin)
+    // Le tri se fait côté CDX avec &reverse=true pour les plus récentes
+    const reverse=(order==='last')?'&reverse=true':'';
+    const fromParam=fromY?'&from='+fromY+'0101000000':'';
+    const toParam=toY?'&to='+toY+'1231235959':'';
+    const cdxUrl='https://web.archive.org/cdx/search/cdx?url='+cleanUrl+'&output=json&fl=timestamp,original,statuscode,mimetype&limit='+limit+fromParam+toParam+reverse;
+    const r=await fetch(cdxUrl,{signal});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const data=await r.json();
+    clearTimeout(tid);
     hideLoader('loader-wb');
-    if (!data || data.length <= 1) {
-      // Proposer quand même un lien direct
-      showResult('res-wayback', `
-        <div style="padding:8px">
-          Aucune capture trouvée pour <strong>${cleanUrl}</strong> via l'API CDX.<br>
-          <a href="https://web.archive.org/web/*/${cleanUrl}" target="_blank" style="color:var(--bleu)">
-            🔗 Vérifier manuellement sur Wayback Machine →
-          </a>
-        </div>`);
+    if(!data||data.length<=1){
+      showResult('res-wayback','<div>Aucune capture trouvée pour <strong>'+cleanUrl+'</strong>'+(fromY||toY?' sur la période sélectionnée':'')+'. <br><a href="https://web.archive.org/web/*/'+cleanUrl+'" target="_blank" style="color:var(--bleu)">🔗 Vérifier sur Wayback Machine →</a></div>');
       return;
     }
-
-    const rows = data.slice(1).map(([ts, original, status, mime]) => {
-      const y=ts.slice(0,4),mo=ts.slice(4,6),d=ts.slice(6,8),h=ts.slice(8,10),mn=ts.slice(10,12),s=ts.slice(12,14);
-      const date = `${d}/${mo}/${y} ${h}:${mn}:${s}`;
-      // Utiliser l'URL originale capturée pour construire le lien Wayback
-      const wbUrl = `https://web.archive.org/web/${ts}/${original || ('https://' + cleanUrl)}`;
-      const sc = parseInt(status);
-      const badge = sc >= 200 && sc < 300 ? 'green' : sc >= 300 && sc < 400 ? 'orange' : 'red';
-      const mimeShort = (mime || '').replace('text/html', 'HTML').replace('application/', '').split(';')[0].substring(0,20);
-      return `<div class="wayback-item">
-        <span style="min-width:130px">${date}</span>
-        <span class="tag ${badge}">HTTP ${status || '?'}</span>
-        <span style="font-size:11px;color:var(--gris-texte);min-width:80px">${mimeShort}</span>
-        <a href="${wbUrl}" target="_blank">Voir →</a>
-      </div>`;
+    let rows=data.slice(1); // retirer la ligne d'en-tête CDX
+    const total=rows.length;
+    // Le tri est déjà fait côté CDX, pas besoin de re-trier
+    const html=rows.map(([ts,original,status,mime])=>{
+      const y=ts.slice(0,4),mo=ts.slice(4,6),d=ts.slice(6,8),h=ts.slice(8,10),mn=ts.slice(10,12);
+      const wbUrl='https://web.archive.org/web/'+ts+'/'+(original||'https://'+cleanUrl);
+      const sc=parseInt(status);
+      const tc=sc>=200&&sc<300?'tag-green':sc>=300&&sc<400?'tag-orange':'tag-red';
+      const ms=(mime||'').replace('text/html','HTML').replace('application/','').split(';')[0].substring(0,20);
+      return '<div class="wayback-item"><span style="min-width:115px;font-size:12px">'+d+'/'+mo+'/'+y+' '+h+':'+mn+'</span><span class="tag '+tc+'">HTTP '+(status||'?')+'</span><span style="font-size:11px;color:var(--gris-texte);min-width:60px">'+ms+'</span><a href="'+wbUrl+'" target="_blank">Voir →</a></div>';
     }).join('');
-
-    showResult('res-wayback', `
-      <div style="margin-bottom:12px;font-weight:700;color:var(--bleu);font-size:12px;text-transform:uppercase;letter-spacing:0.05em">
-        ${data.length-1} captures trouvées pour ${cleanUrl}
-      </div>
-      <div style="border:1px solid var(--gris-moyen);border-radius:2px;overflow:hidden">${rows}</div>
-      <div style="margin-top:10px;font-size:12px;color:var(--gris-texte)">
-        Source : <a href="https://web.archive.org/web/*/${cleanUrl}" target="_blank" style="color:var(--bleu)">Internet Archive Wayback Machine →</a>
-      </div>
-    `);
-  } catch(e) {
-    clearTimeout(timeoutId);
-    hideLoader('loader-wb');
-    if (e.name === 'AbortError') {
-      showResult('res-wayback', `
-        <div style="color:var(--orange)">⏱️ L'Internet Archive met du temps à répondre (délai dépassé).<br>
-        <a href="https://web.archive.org/web/*/${cleanUrl}" target="_blank" style="color:var(--bleu)">🔗 Ouvrir directement sur Wayback Machine →</a></div>`);
-    } else {
-      showResult('res-wayback', `
-        <div style="color:var(--rouge)">❌ Erreur : ${e.message}<br>
-        <a href="https://web.archive.org/web/*/${cleanUrl}" target="_blank" style="color:var(--bleu)">🔗 Ouvrir directement sur Wayback Machine →</a></div>`);
-    }
-  }
+    const periode=(fromY||toY)?(' · '+( fromY||'début')+' → '+(toY||'fin')):'';
+    const label=(order==='last'?'plus récentes':'plus anciennes');
+    showResult('res-wayback','<div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><span style="font-weight:700;color:var(--bleu);font-size:12px;text-transform:uppercase;letter-spacing:.04em">'+rows.length+' / '+total+' capture(s) — '+label+periode+'</span><a href="https://web.archive.org/web/*/'+cleanUrl+'" target="_blank" style="font-size:12px;color:var(--bleu)">Voir tout sur Wayback →</a></div><div style="border:1px solid var(--gris-moyen);border-radius:6px;overflow:hidden">'+html+'</div>');
+  }catch(e){
+    clearTimeout(tid);hideLoader('loader-wb');
+    if(e.name==='AbortError')return;
+    const fb=' <a href="https://web.archive.org/web/*/'+cleanUrl+'" target="_blank" style="color:var(--bleu)">🔗 Ouvrir directement →</a>';
+    showResult('res-wayback','<div style="color:var(--rouge)">❌ '+e.message+fb+'</div>');
+  }finally{wbController=null;}
 }
 
-// ─── DORKING ───
-function addDork(op) {
-  const el = document.getElementById('dork-query');
-  el.value = (el.value + ' ' + op).trim() + ' ';
-  el.focus();
-}
-function setDork(q) { document.getElementById('dork-query').value = q; }
-function executeDork() {
-  const q = document.getElementById('dork-query').value.trim();
-  if (!q) return;
-  window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank');
-}
-function executeDorkBing() {
-  const q = document.getElementById('dork-query').value.trim();
-  if (!q) return;
-  window.open('https://www.bing.com/search?q=' + encodeURIComponent(q), '_blank');
-}
+// DORKING
+function addDork(op){const el=document.getElementById('dork-query');el.value=(el.value+' '+op).trim()+' ';el.focus()}
+function setDork(q){document.getElementById('dork-query').value=q}
+function executeDork(e){const q=document.getElementById('dork-query').value.trim();if(!q)return;window.open((e==='bing'?'https://www.bing.com/search?q=':'https://www.google.com/search?q=')+encodeURIComponent(q),'_blank')}
 
-// ─── EMAIL LOOKUP ───
-async function lookupEmail() {
-  const email = document.getElementById('email-input').value.trim();
-  if (!email || !email.includes('@')) { alert('Veuillez entrer une adresse email valide.'); return; }
-  showLoader('loader-email'); hideResult('res-email');
-  await new Promise(r => setTimeout(r, 1800));
-  hideLoader('loader-email');
-
-  // Simulation enrichie (les APIs réelles comme HaveIBeenPwned nécessitent une clé API)
-  const domain = email.split('@')[1];
-  const services = [
-    { name: 'Google', icon: '🔵', status: Math.random() > 0.4 },
-    { name: 'Facebook', icon: '📘', status: Math.random() > 0.5 },
-    { name: 'Twitter/X', icon: '🐦', status: Math.random() > 0.5 },
-    { name: 'LinkedIn', icon: '💼', status: Math.random() > 0.6 },
-    { name: 'Instagram', icon: '📸', status: Math.random() > 0.6 },
-    { name: 'GitHub', icon: '🐙', status: Math.random() > 0.7 },
-    { name: 'Dropbox', icon: '📦', status: Math.random() > 0.7 },
-    { name: 'Adobe', icon: '🎨', status: Math.random() > 0.7 },
-    { name: 'Spotify', icon: '🎵', status: Math.random() > 0.6 },
-    { name: 'PayPal', icon: '💳', status: Math.random() > 0.7 },
-  ];
-  const found = services.filter(s => s.status);
-  const notFound = services.filter(s => !s.status);
-
-  const html = `
-    <div style="margin-bottom:14px;font-weight:700;color:var(--bleu);font-size:12px;text-transform:uppercase;letter-spacing:0.04em">
-      Analyse de : <code>${email}</code> — Domaine : <code>${domain}</code>
-    </div>
-    <div style="margin-bottom:12px">
-      ${row('Services détectés', `<span class="tag green">${found.length} service(s)</span>`)}
-      ${row('Services non détectés', `<span class="tag" style="background:#999">${notFound.length} service(s)</span>`)}
-    </div>
-    <div style="font-weight:700;font-size:12px;color:var(--vert-ok);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em">✅ Présences confirmées :</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
-      ${found.map(s=>`<span style="background:#e8f5e9;border:1px solid var(--vert-ok);border-radius:3px;padding:5px 12px;font-size:12.5px">${s.icon} ${s.name}</span>`).join('')}
-    </div>
-    <div style="font-size:11px;color:var(--orange);background:#fff8e1;border:1px solid #ffd54f;padding:8px 12px;border-radius:2px;margin-top:8px">
-      ⚠️ <strong>Note :</strong> Résultats simulatifs à titre démonstratif. Pour des résultats réels, connectez une clé API HaveIBeenPwned (hibp) ou Holehe.
-    </div>
-  `;
-  showResult('res-email', html);
+// EMAIL LOOKUP
+function lookupEmail(){
+  const email=document.getElementById('email-input').value.trim();
+  if(!email||!email.includes('@')){alert('Veuillez entrer une adresse email valide.');return}
+  const domain=email.split('@')[1];
+  const user=email.split('@')[0];
+  const links=[
+    {n:'Google',u:'https://www.google.com/search?q="'+encodeURIComponent(email)+'"',i:'🔵'},
+    {n:'Have I Been Pwned',u:'https://haveibeenpwned.com/account/'+encodeURIComponent(email),i:'🔐'},
+    {n:'LinkedIn',u:'https://www.linkedin.com/search/results/all/?keywords='+encodeURIComponent(email),i:'💼'},
+    {n:'Twitter/X',u:'https://x.com/search?q='+encodeURIComponent(email),i:'🐦'},
+    {n:'WHOIS ('+domain+')',u:'https://who.is/whois/'+domain,i:'🌐'},
+    {n:'MX / DNS ('+domain+')',u:'https://mxtoolbox.com/SuperTool.aspx?action=mx%3a'+domain,i:'📡'},
+  ].map(l=>'<a href="'+l.u+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:#f0f4ff;border:1px solid #c7d5f8;border-radius:6px;padding:7px 14px;text-decoration:none;color:var(--bleu);font-size:12.5px;font-weight:600;margin:4px">'+l.i+' '+l.n+'</a>').join('');
+  showResult('res-email',`
+    <div style="margin-bottom:14px">${row('Email','<code>'+email+'</code>')}${row('Domaine','<code>'+domain+'</code>')}${row('Utilisateur','<code>'+user+'</code>')}</div>
+    <div style="font-weight:700;font-size:12px;color:var(--bleu);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">🔗 Liens de recherche publics :</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px">${links}</div>
+    <div style="margin-top:12px;font-size:12px;color:var(--gris-texte);background:#f9fafb;border:1px solid var(--gris-moyen);padding:10px 12px;border-radius:6px">ℹ️ Ces liens ouvrent des sources publiques. Aucune requête automatique n'est effectuée vers des bases privées.</div>
+  `);
 }
 
-// ─── METADATA ───
-function handleMetaDrop(e) {
-  e.preventDefault();
-  document.getElementById('meta-drop').classList.remove('dragging');
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) analyzeMetadata(file);
+// METADATA EXIF
+function handleMetaDrop(e){
+  e.preventDefault();document.getElementById('meta-drop').classList.remove('dragging');
+  const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))analyzeMetadata(f);
 }
-
-async function analyzeMetadata(file) {
-  if (!file) return;
-  showLoader('loader-meta'); hideResult('res-metadata');
-  const preview = document.getElementById('meta-preview');
-  preview.style.display = 'block';
-  preview.src = URL.createObjectURL(file);
-
-  // Métadonnées de base (toujours disponibles)
-  const meta = {};
-  meta['Nom du fichier'] = file.name;
-  meta['Type MIME'] = file.type;
-  meta['Taille du fichier'] = formatSize(file.size) + ` (${file.size.toLocaleString('fr-FR')} octets)`;
-  meta['Dernière modification (OS)'] = new Date(file.lastModified).toLocaleString('fr-FR');
-
-  // Dimensions via Image
-  const dims = await new Promise(res => {
-    const img = new Image();
-    img.onload = () => { res({ w: img.naturalWidth, h: img.naturalHeight }); URL.revokeObjectURL(img.src); };
-    img.onerror = () => res(null);
-    img.src = URL.createObjectURL(file);
-  });
-  if (dims) {
-    meta['Dimensions'] = `${dims.w} × ${dims.h} px`;
-    meta['Mégapixels'] = ((dims.w * dims.h) / 1000000).toFixed(2) + ' MP';
-    meta['Ratio d\'aspect'] = simplifyRatio(dims.w, dims.h);
-  }
-
-  // EXIF complet via exif-js
-  const exifData = await extractExifFull(file);
-  const allMeta = { ...meta, ...exifData };
-
+async function analyzeMetadata(file){
+  if(!file)return;
+  showLoader('loader-meta');hideResult('res-metadata');
+  const preview=document.getElementById('meta-preview');
+  preview.style.display='block';preview.src=URL.createObjectURL(file);
+  const meta={};
+  meta['Nom du fichier']=file.name;meta['Type MIME']=file.type;
+  meta['Taille']=formatSize(file.size)+' ('+file.size.toLocaleString('fr-FR')+' octets)';
+  meta['Dernière modification']=new Date(file.lastModified).toLocaleString('fr-FR');
+  const dims=await new Promise(res=>{const img=new Image();img.onload=()=>{res({w:img.naturalWidth,h:img.naturalHeight});URL.revokeObjectURL(img.src)};img.onerror=()=>res(null);img.src=URL.createObjectURL(file)});
+  if(dims){meta['Dimensions']=dims.w+' × '+dims.h+' px';meta['Mégapixels']=((dims.w*dims.h)/1e6).toFixed(2)+' MP';meta['Ratio']=simplifyRatio(dims.w,dims.h)}
+  const exifData=await extractExifFull(file);
   hideLoader('loader-meta');
-  renderMeta(allMeta, file);
+  renderMeta({...meta,...exifData});
 }
+function simplifyRatio(w,h){const gcd=(a,b)=>b===0?a:gcd(b,a%b);const d=gcd(w,h);return w/d+':'+h/d}
 
-function extractExifFull(file) {
-  return new Promise(resolve => {
-    if (typeof EXIF === 'undefined') { resolve({}); return; }
-
-    // exif-js fonctionne sur un élément Image
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = function() {
-      EXIF.getData(img, function() {
-        const result = {};
-        const allTags = EXIF.getAllTags(this);
-
-        // Mapping des tags EXIF vers des libellés français lisibles
-        const tagMap = {
-          Make: 'Fabricant appareil',
-          Model: 'Modèle appareil',
-          Software: 'Logiciel',
-          DateTime: 'Date/heure originale',
-          DateTimeOriginal: 'Date prise de vue',
-          DateTimeDigitized: 'Date numérisation',
-          ExifIFDPointer: null,
-          GPSInfoIFDPointer: null,
-          InteroperabilityIFDPointer: null,
-          ExifVersion: 'Version EXIF',
-          FlashpixVersion: 'Version Flashpix',
-          ColorSpace: 'Espace colorimétrique',
-          PixelXDimension: 'Largeur pixel (EXIF)',
-          PixelYDimension: 'Hauteur pixel (EXIF)',
-          ExposureTime: 'Temps d\'exposition',
-          FNumber: 'Ouverture (f/)',
-          ExposureProgram: 'Programme d\'exposition',
-          ISOSpeedRatings: 'Sensibilité ISO',
-          ShutterSpeedValue: 'Vitesse obturateur (APEX)',
-          ApertureValue: 'Ouverture (APEX)',
-          BrightnessValue: 'Luminosité',
-          ExposureBiasValue: 'Correction d\'exposition',
-          MaxApertureValue: 'Ouverture max',
-          MeteringMode: 'Mode de mesure',
-          LightSource: 'Source de lumière',
-          Flash: 'Flash',
-          FocalLength: 'Longueur focale',
-          FocalLengthIn35mmFilm: 'Focale équiv. 35mm',
-          SubjectArea: 'Zone sujet',
-          MakerNote: null, // souvent binaire, on skip
-          UserComment: 'Commentaire utilisateur',
-          SubSecTime: 'Sous-seconde',
-          SubSecTimeOriginal: 'Sous-seconde (originale)',
-          FlashEnergy: 'Énergie flash',
-          SubjectLocation: 'Position sujet',
-          ExposureIndex: 'Index d\'exposition',
-          SensingMethod: 'Méthode de capteur',
-          FileSource: 'Source du fichier',
-          SceneType: 'Type de scène',
-          CFAPattern: 'Motif CFA',
-          CustomRendered: 'Rendu personnalisé',
-          ExposureMode: 'Mode d\'exposition',
-          WhiteBalance: 'Balance des blancs',
-          DigitalZoomRatio: 'Zoom numérique',
-          SceneCaptureType: 'Type de capture',
-          GainControl: 'Contrôle du gain',
-          Contrast: 'Contraste',
-          Saturation: 'Saturation',
-          Sharpness: 'Netteté',
-          DeviceSettingDescription: 'Paramètres appareil',
-          SubjectDistanceRange: 'Distance sujet',
-          ImageUniqueID: 'ID unique image',
-          LensModel: 'Modèle objectif',
-          LensMake: 'Fabricant objectif',
-          LensSerialNumber: 'N° série objectif',
-          Orientation: 'Orientation',
-          XResolution: 'Résolution X',
-          YResolution: 'Résolution Y',
-          ResolutionUnit: 'Unité de résolution',
-          Artist: 'Artiste / Auteur',
-          Copyright: 'Copyright',
-          ImageDescription: 'Description image',
-          // GPS
-          GPSLatitude: 'GPS — Latitude',
-          GPSLongitude: 'GPS — Longitude',
-          GPSLatitudeRef: 'GPS — Réf. Latitude',
-          GPSLongitudeRef: 'GPS — Réf. Longitude',
-          GPSAltitude: 'GPS — Altitude (m)',
-          GPSAltitudeRef: 'GPS — Réf. Altitude',
-          GPSTimestamp: 'GPS — Heure (UTC)',
-          GPSDateStamp: 'GPS — Date',
-          GPSSatellites: 'GPS — Satellites',
-          GPSStatus: 'GPS — Statut',
-          GPSDOP: 'GPS — Précision DOP',
-          GPSSpeedRef: 'GPS — Réf. Vitesse',
-          GPSSpeed: 'GPS — Vitesse',
-          GPSImgDirectionRef: 'GPS — Réf. Direction',
-          GPSImgDirection: 'GPS — Direction',
-          GPSMapDatum: 'GPS — Datum',
-          GPSProcessingMethod: 'GPS — Méthode',
-        };
-
-        for (const [tag, label] of Object.entries(tagMap)) {
-          if (label === null) continue;
-          const val = allTags[tag];
-          if (val === undefined || val === null || val === '') continue;
-
-          let formatted = val;
-          // Formatage spécial
-          if (tag === 'ExposureTime') {
-            formatted = typeof val === 'object' && val.numerator !== undefined
-              ? `${val.numerator}/${val.denominator} s`
-              : val + ' s';
-          } else if (tag === 'FNumber') {
-            formatted = 'f/' + (typeof val === 'object' ? (val.numerator/val.denominator).toFixed(1) : val);
-          } else if (tag === 'FocalLength') {
-            formatted = (typeof val === 'object' ? (val.numerator/val.denominator).toFixed(1) : val) + ' mm';
-          } else if (tag === 'FocalLengthIn35mmFilm') {
-            formatted = val + ' mm';
-          } else if (tag === 'ISOSpeedRatings') {
-            formatted = 'ISO ' + val;
-          } else if (tag === 'GPSLatitude' || tag === 'GPSLongitude') {
-            if (Array.isArray(val) && val.length === 3) {
-              const deg = typeof val[0] === 'object' ? val[0].numerator/val[0].denominator : val[0];
-              const min = typeof val[1] === 'object' ? val[1].numerator/val[1].denominator : val[1];
-              const sec = typeof val[2] === 'object' ? val[2].numerator/val[2].denominator : val[2];
-              formatted = `${deg}° ${min}' ${sec.toFixed(4)}"`;
-            }
-          } else if (tag === 'Flash') {
-            const flashVals = {0:'Non déclenché',1:'Déclenché',5:'Déclenché, retour non détecté',7:'Déclenché, retour détecté',
-              9:'Déclenché, mode forcé',13:'Déclenché, retour non détecté, mode forcé',15:'Déclenché, retour détecté, mode forcé',
-              16:'Non déclenché, mode suppression',24:'Non déclenché, mode auto',25:'Déclenché, mode auto',
-              29:'Déclenché, mode auto, retour non détecté',31:'Déclenché, mode auto, retour détecté',32:'Pas de flash',65:'Déclenché, yeux rouges',
-            };
-            formatted = flashVals[val] || `Code ${val}`;
-          } else if (tag === 'Orientation') {
-            const oriVals = {1:'Normal (0°)',2:'Miroir horizontal',3:'Rotation 180°',4:'Miroir vertical',
-              5:'Miroir horizontal + rotation 270°',6:'Rotation 90°',7:'Miroir horizontal + rotation 90°',8:'Rotation 270°'};
-            formatted = oriVals[val] || val;
-          } else if (tag === 'ColorSpace') {
-            formatted = val === 1 ? 'sRGB' : val === 65535 ? 'Non calibré' : `Code ${val}`;
-          } else if (tag === 'ResolutionUnit') {
-            formatted = val === 1 ? 'Sans unité' : val === 2 ? 'pouce (dpi)' : val === 3 ? 'centimètre' : val;
-          } else if (tag === 'WhiteBalance') {
-            formatted = val === 0 ? 'Automatique' : val === 1 ? 'Manuel' : val;
-          } else if (tag === 'ExposureMode') {
-            formatted = val === 0 ? 'Auto' : val === 1 ? 'Manuel' : val === 2 ? 'Bracketing auto' : val;
-          } else if (tag === 'MeteringMode') {
-            const mm = {0:'Inconnu',1:'Moyenne',2:'Centre pondéré',3:'Spot',4:'Multi-spot',5:'Multi-zones',6:'Partielle',255:'Autre'};
-            formatted = mm[val] || val;
-          } else if (tag === 'GPSAltitude') {
-            formatted = (typeof val === 'object' ? (val.numerator/val.denominator).toFixed(1) : val) + ' m';
-          } else if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
-            if (val.numerator !== undefined) {
-              formatted = val.denominator === 1 ? val.numerator : `${val.numerator}/${val.denominator} (${(val.numerator/val.denominator).toFixed(4)})`;
-            } else {
-              try { formatted = JSON.stringify(val); } catch { formatted = String(val); }
-            }
-          }
-
-          result[label] = formatted;
+function extractExifFull(file){
+  return new Promise(resolve=>{
+    if(typeof EXIF==='undefined'){resolve({});return}
+    const img=new Image();const url=URL.createObjectURL(file);
+    img.onload=function(){
+      EXIF.getData(img,function(){
+        const result={};const all=EXIF.getAllTags(this);
+        const tm={Make:'Fabricant',Model:'Modèle',Software:'Logiciel',DateTime:'Date/heure',DateTimeOriginal:'Date prise de vue',
+          ExifVersion:'Version EXIF',ColorSpace:'Espace colorimétrique',PixelXDimension:'Largeur EXIF',PixelYDimension:'Hauteur EXIF',
+          ExposureTime:"Temps d'exposition",FNumber:'Ouverture (f/)',ISOSpeedRatings:'ISO',
+          Flash:'Flash',FocalLength:'Longueur focale',FocalLengthIn35mmFilm:'Focale 35mm',
+          LensModel:'Objectif',LensMake:'Fabricant objectif',UserComment:'Commentaire',
+          Orientation:'Orientation',XResolution:'Résolution X',YResolution:'Résolution Y',
+          Artist:'Auteur',Copyright:'Copyright',ImageDescription:'Description',
+          WhiteBalance:'Balance des blancs',ExposureMode:"Mode d'exposition",
+          ExifIFDPointer:null,GPSInfoIFDPointer:null,InteroperabilityIFDPointer:null,MakerNote:null,
+          GPSLatitude:'GPS — Latitude',GPSLongitude:'GPS — Longitude',
+          GPSLatitudeRef:'GPS — Réf. Lat',GPSLongitudeRef:'GPS — Réf. Lon',
+          GPSAltitude:'GPS — Altitude (m)',GPSTimestamp:'GPS — Heure UTC',GPSDateStamp:'GPS — Date',GPSSatellites:'GPS — Satellites'};
+        for(const[tag,label]of Object.entries(tm)){
+          if(!label)continue;const val=all[tag];if(val===undefined||val===null||val==='')continue;
+          let f=val;
+          if(tag==='ExposureTime')f=(typeof val==='object'&&val.numerator!==undefined)?val.numerator+'/'+val.denominator+' s':val+' s';
+          else if(tag==='FNumber')f='f/'+(typeof val==='object'?(val.numerator/val.denominator).toFixed(1):val);
+          else if(tag==='FocalLength')f=(typeof val==='object'?(val.numerator/val.denominator).toFixed(1):val)+' mm';
+          else if(tag==='ISOSpeedRatings')f='ISO '+val;
+          else if(tag==='GPSLatitude'||tag==='GPSLongitude'){if(Array.isArray(val)&&val.length===3){const deg=typeof val[0]==='object'?val[0].numerator/val[0].denominator:val[0];const min=typeof val[1]==='object'?val[1].numerator/val[1].denominator:val[1];const sec=typeof val[2]==='object'?val[2].numerator/val[2].denominator:val[2];f=deg+"° "+min+"' "+sec.toFixed(4)+'"'}}
+          else if(tag==='GPSAltitude')f=(typeof val==='object'?(val.numerator/val.denominator).toFixed(1):val)+' m';
+          else if(tag==='Orientation'){const o={1:'Normal',2:'Miroir H',3:'180°',4:'Miroir V',6:'90°',8:'270°'};f=o[val]||val}
+          else if(tag==='ColorSpace')f=val===1?'sRGB':val===65535?'Non calibré':'Code '+val;
+          else if(tag==='WhiteBalance')f=val===0?'Automatique':val===1?'Manuel':val;
+          else if(typeof val==='object'&&val!==null&&!Array.isArray(val)&&val.numerator!==undefined)f=val.denominator===1?val.numerator:val.numerator+'/'+val.denominator;
+          result[label]=f;
         }
-
-        // Coordonnées GPS complètes si disponibles
-        const lat = EXIF.getTag(this, 'GPSLatitude');
-        const latRef = EXIF.getTag(this, 'GPSLatitudeRef');
-        const lon = EXIF.getTag(this, 'GPSLongitude');
-        const lonRef = EXIF.getTag(this, 'GPSLongitudeRef');
-        if (lat && lon) {
-          const toDecimal = (arr, ref) => {
-            if (!Array.isArray(arr)) return null;
-            const d = typeof arr[0] === 'object' ? arr[0].numerator/arr[0].denominator : arr[0];
-            const m = typeof arr[1] === 'object' ? arr[1].numerator/arr[1].denominator : arr[1];
-            const s = typeof arr[2] === 'object' ? arr[2].numerator/arr[2].denominator : arr[2];
-            let dec = d + m/60 + s/3600;
-            if (ref === 'S' || ref === 'W') dec = -dec;
-            return dec.toFixed(7);
-          };
-          const latDec = toDecimal(lat, latRef);
-          const lonDec = toDecimal(lon, lonRef);
-          if (latDec && lonDec) {
-            const mapUrl = `https://www.openstreetmap.org/?mlat=${latDec}&mlon=${lonDec}#map=16/${latDec}/${lonDec}`;
-            result['📍 GPS — Coordonnées décimales'] = `${latDec}, ${lonDec} &nbsp;—&nbsp; <a href="${mapUrl}" target="_blank" style="color:var(--bleu)">🗺️ Voir sur la carte →</a>`;
-          }
+        const lat=EXIF.getTag(this,'GPSLatitude'),latR=EXIF.getTag(this,'GPSLatitudeRef');
+        const lon=EXIF.getTag(this,'GPSLongitude'),lonR=EXIF.getTag(this,'GPSLongitudeRef');
+        if(lat&&lon){
+          const toDec=(arr,ref)=>{if(!Array.isArray(arr))return null;const d=typeof arr[0]==='object'?arr[0].numerator/arr[0].denominator:arr[0];const m=typeof arr[1]==='object'?arr[1].numerator/arr[1].denominator:arr[1];const s=typeof arr[2]==='object'?arr[2].numerator/arr[2].denominator:arr[2];let dec=d+m/60+s/3600;if(ref==='S'||ref==='W')dec=-dec;return dec.toFixed(7)};
+          const latD=toDec(lat,latR),lonD=toDec(lon,lonR);
+          if(latD&&lonD){const mapUrl='https://www.openstreetmap.org/?mlat='+latD+'&mlon='+lonD+'#map=16/'+latD+'/'+lonD;result['📍 GPS — Coordonnées décimales']=latD+', '+lonD+' &nbsp;—&nbsp; <a href="'+mapUrl+'" target="_blank" style="color:var(--bleu)">🗺️ Voir sur la carte →</a>'}
         }
-
-        URL.revokeObjectURL(url);
-        resolve(result);
+        URL.revokeObjectURL(url);resolve(result);
       });
     };
-    img.onerror = () => { URL.revokeObjectURL(url); resolve({}); };
-    img.src = url;
+    img.onerror=()=>{URL.revokeObjectURL(url);resolve({})};img.src=url;
   });
 }
 
-function simplifyRatio(w, h) {
-  const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
-  const d = gcd(w, h);
-  return `${w/d}:${h/d}`;
-}
-
-function renderMeta(all, file) {
-  // Séparer GPS des autres
-  const gpsEntries = Object.entries(all).filter(([k]) => k.includes('GPS') || k.includes('📍'));
-  const otherEntries = Object.entries(all).filter(([k]) => !k.includes('GPS') && !k.includes('📍'));
-
-  const makeRows = (entries) => entries.map(([k,v]) =>
-    `<tr><td style="font-weight:600;color:var(--bleu);white-space:nowrap">${k}</td><td>${v}</td></tr>`
-  ).join('');
-
-  const gpsSection = gpsEntries.length > 0 ? `
-    <div style="margin-top:16px;font-weight:700;font-size:12px;color:var(--bleu);text-transform:uppercase;letter-spacing:0.04em;padding-bottom:6px;border-bottom:2px solid var(--bleu)">
-      📍 Données GPS
-    </div>
-    <table class="meta-table" style="margin-top:8px">
-      <thead><tr><th>Propriété</th><th>Valeur</th></tr></thead>
-      <tbody>${makeRows(gpsEntries)}</tbody>
-    </table>
-  ` : '<div style="margin-top:12px;font-size:12px;color:var(--gris-texte)">📍 Aucune donnée GPS dans cette image.</div>';
-
-  const totalFields = Object.keys(all).length;
-  const html = `
-    <div style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-      <span style="font-weight:700;font-size:12px;color:var(--bleu);text-transform:uppercase;letter-spacing:0.04em">${totalFields} propriétés extraites</span>
-      <span class="tag ${gpsEntries.length > 0 ? 'red' : 'green'}">${gpsEntries.length > 0 ? `⚠️ GPS intégré (${gpsEntries.length} champs)` : '✅ Pas de GPS'}</span>
-    </div>
-    <table class="meta-table">
-      <thead><tr><th>Propriété</th><th>Valeur</th></tr></thead>
-      <tbody>${makeRows(otherEntries)}</tbody>
-    </table>
-    ${gpsSection}
-  `;
-  showResult('res-metadata', html);
-}
-
-// ─── UTILS ───
-function row(k, v) {
-  return `<div class="result-row"><span class="result-key">${k}</span><span class="result-val">${v}</span></div>`;
-}
-function showResult(id, html) {
-  const el = document.getElementById(id);
-  el.innerHTML = html;
-  el.classList.add('show');
-}
-function hideResult(id) { document.getElementById(id).classList.remove('show'); }
-function showLoader(id) { document.getElementById(id).classList.add('show'); }
-function hideLoader(id) { document.getElementById(id).classList.remove('show'); }
-function formatSize(b) {
-  if (b < 1024) return b + ' o';
-  if (b < 1048576) return (b/1024).toFixed(1) + ' Ko';
-  return (b/1048576).toFixed(2) + ' Mo';
+function renderMeta(all){
+  const gpsE=Object.entries(all).filter(([k])=>k.includes('GPS')||k.includes('📍'));
+  const otherE=Object.entries(all).filter(([k])=>!k.includes('GPS')&&!k.includes('📍'));
+  const mkRows=entries=>entries.map(([k,v])=>'<tr><td style="font-weight:600;color:var(--bleu);white-space:nowrap">'+k+'</td><td>'+v+'</td></tr>').join('');
+  const gpsSection=gpsE.length>0?'<div style="margin-top:18px;font-weight:700;font-size:12px;color:var(--bleu);text-transform:uppercase;letter-spacing:.04em;padding-bottom:6px;border-bottom:2px solid var(--bleu)">📍 Données GPS</div><table class="meta-table" style="margin-top:8px"><thead><tr><th>Propriété</th><th>Valeur</th></tr></thead><tbody>'+mkRows(gpsE)+'</tbody></table>':'<div style="margin-top:12px;font-size:12px;color:var(--gris-texte)">📍 Aucune donnée GPS.</div>';
+  showResult('res-metadata','<div style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><span style="font-weight:700;font-size:12px;color:var(--bleu);text-transform:uppercase;letter-spacing:.04em">'+Object.keys(all).length+' propriétés extraites</span><span class="tag '+(gpsE.length>0?'tag-red':'tag-green')+'">'+(gpsE.length>0?'⚠️ GPS intégré ('+gpsE.length+' champs)':'✅ Pas de GPS')+'</span></div><table class="meta-table"><thead><tr><th>Propriété</th><th>Valeur</th></tr></thead><tbody>'+mkRows(otherE)+'</tbody></table>'+gpsSection);
 }
 </script>
 </body>
