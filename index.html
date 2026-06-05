@@ -155,15 +155,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;background:
           <div class="form-group"><label>N° sécurité sociale</label><input type="text" id="b-nir" placeholder="1 85 12 75 XXX XXX XX"></div>
           <div class="form-group"><label>Date de naissance</label><input type="text" id="b-dob" placeholder="YYYY-MM-DD"></div>
           <div class="form-group"><label>IBAN</label><input type="text" id="b-iban" placeholder="FR76..."></div>
-          <div class="form-group"><label>Résultats / page</label>
-            <select id="b-perpage">
-              <option value="10" selected>10</option>
-              <option value="25">25</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
-          </div>
-          <div class="form-group"><label>Page</label><input type="number" id="b-page" value="1" min="1" style="width:80px"></div>
+          <div class="form-group"><label>Département</label><input type="text" id="b-dept" placeholder="75"></div>
+          <div class="form-group"><label>Année de naissance</label><input type="text" id="b-annee" placeholder="1985" maxlength="4"></div>
         </div>
         <div style="margin-top:6px;display:flex;align-items:center;gap:12px">
           <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
@@ -411,14 +404,20 @@ function switchBrixTab(tab) {
 }
 
 function brixClearSearch() {
-  ['b-nom','b-prenom','b-email','b-tel','b-cp','b-ville','b-immat','b-nir','b-dob','b-iban'].forEach(id => {
+  ['b-nom','b-prenom','b-email','b-tel','b-cp','b-ville','b-immat','b-nir','b-dob','b-iban','b-dept','b-annee'].forEach(id => {
     const el = document.getElementById(id);
     if(el) el.value = '';
   });
   document.getElementById('b-flexible').checked = false;
-  document.getElementById('b-page').value = '1';
+  _brixAllResults = []; _brixMeta = {}; _brixClientPage = 1;
   hideResult('res-brix');
 }
+
+// Stockage côté client pour pagination sans requêtes supplémentaires
+let _brixAllResults = [];
+let _brixMeta       = {};
+let _brixClientPage = 1;
+const BRIX_PAGE_SIZE = 5; // résultats affichés par page côté client
 
 async function brixSearch() {
   const body = {};
@@ -426,7 +425,7 @@ async function brixSearch() {
     'b-nom': 'nom_famille', 'b-prenom': 'prenom', 'b-email': 'email',
     'b-tel': 'telephone', 'b-cp': 'code_postal', 'b-ville': 'ville',
     'b-immat': 'immatriculation', 'b-nir': 'nir', 'b-dob': 'date_naissance',
-    'b-iban': 'iban'
+    'b-iban': 'iban', 'b-dept': 'departement', 'b-annee': 'annee_naissance'
   };
   let hasField = false;
   for(const [id, field] of Object.entries(map)) {
@@ -435,8 +434,9 @@ async function brixSearch() {
   }
   if(!hasField) { alert('Veuillez renseigner au moins un critère de recherche.'); return; }
   body.flexible = document.getElementById('b-flexible').checked;
-  body.per_page = parseInt(document.getElementById('b-perpage').value) || 10;
-  body.page = parseInt(document.getElementById('b-page').value) || 1;
+  // On ne demande jamais page > 1 à l'API (plan Starter bloqué)
+  // per_page max autorisé sur Starter = 10
+  body.per_page = 10;
 
   showLoader('loader-brix'); hideResult('res-brix');
   try {
@@ -447,7 +447,11 @@ async function brixSearch() {
     hideLoader('loader-brix');
     updateQuotaBar(headers);
     if(d.status !== 200) { showResult('res-brix', brixError(d)); return; }
-    showResult('res-brix', brixRenderResults(d));
+    // Stocker et afficher page 1 côté client
+    _brixAllResults = d.data?.results || [];
+    _brixMeta       = d.meta || {};
+    _brixClientPage = 1;
+    showResult('res-brix', brixRenderClientPage(d));
   } catch(e) {
     hideLoader('loader-brix');
     showResult('res-brix', e.__brixDiag || '<div style="color:var(--rouge)">❌ ' + (e.message||String(e)) + '</div>');
@@ -579,29 +583,6 @@ function brixRenderResults(d) {
         ${sources ? '<div style="margin-top:10px;font-size:11px;font-weight:700;color:var(--gris-texte);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Sources</div><div class="brix-sources">'+sources+'</div>' : ''}
       </div>
     </div>`;
-  }).join('');
-
-  // Paginateur
-  let pager = '';
-  if((meta.pages||1) > 1) {
-    const cur = meta.page || 1;
-    const total = meta.pages;
-    pager = `<div class="brix-pager">
-      ${cur > 1 ? `<button class="btn btn-sm btn-primary" onclick="brixGoPage(${cur-1})">← Préc.</button>` : ''}
-      <span style="font-size:12px;color:var(--gris-texte)">Page ${cur} / ${total}</span>
-      ${cur < total ? `<button class="btn btn-sm btn-primary" onclick="brixGoPage(${cur+1})">Suiv. →</button>` : ''}
-    </div>`;
-  }
-
-  return metaBar + cards + pager;
-}
-
-function brixGoPage(page) {
-  document.getElementById('b-page').value = page;
-  brixSearch();
-  document.getElementById('sec-identite').scrollIntoView({behavior:'smooth'});
-}
-
 // IDENTITÉ (anciennes fonctions conservées pour compatibilité)
 function formatImmat(el){
   let v=el.value.replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
