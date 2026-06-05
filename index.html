@@ -70,7 +70,23 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;background:
 .wayback-item{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--gris-moyen);font-size:12.5px;flex-wrap:wrap;gap:6px}
 .wayback-item:hover{background:var(--gris-clair)}
 .wayback-item a{color:var(--bleu);text-decoration:none;font-weight:600}
-.footer{background:var(--bleu);color:rgba(255,255,255,.65);text-align:center;padding:14px 24px;font-size:11.5px;letter-spacing:.03em;flex-shrink:0}
+.brix-tab{flex:1;min-width:120px;background:var(--blanc);border:none;border-right:1px solid var(--gris-moyen);padding:10px 14px;font-size:12px;font-weight:700;color:var(--gris-texte);cursor:pointer;font-family:inherit;letter-spacing:.03em;transition:all .15s;text-align:center}
+.brix-tab:last-child{border-right:none}
+.brix-tab:hover{background:#f0f4ff;color:var(--bleu)}
+.brix-tab.active{background:var(--bleu);color:#fff}
+.brix-profile{background:var(--blanc);border:1px solid var(--gris-moyen);border-radius:8px;margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow)}
+.brix-profile-header{background:#fafbff;border-bottom:1px solid var(--gris-moyen);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.brix-profile-name{font-weight:800;font-size:14px;color:var(--bleu)}
+.brix-profile-body{padding:14px 16px}
+.brix-field{display:flex;gap:12px;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12.5px}
+.brix-field:last-child{border-bottom:none}
+.brix-field-key{font-weight:700;color:var(--bleu);min-width:180px;font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;flex-shrink:0}
+.brix-sources{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.brix-source-tag{background:#e0eaff;color:var(--bleu);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700}
+.brix-meta{background:#f8faff;border:1px solid #dce8ff;border-radius:6px;padding:10px 14px;font-size:12px;color:var(--bleu);display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.brix-meta span{font-weight:700}
+.brix-pager{display:flex;gap:8px;margin-top:14px;align-items:center}
+
 @media(max-width:600px){
   .header-top{padding:10px 12px}.site-title .subtitle{display:none}
   .main{padding:14px 10px 40px}.card-body{padding:14px}
@@ -94,7 +110,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;background:
 
 <nav class="nav-bar">
   <div class="nav-inner">
-    <a class="nav-item active" onclick="showSection('identite',this)">🪪 Fiche identité</a>
+    <a class="nav-item active" onclick="showSection('identite',this)">🪪 Recherche BrixHub</a>
     <a class="nav-item" onclick="showSection('ip',this)">🌐 Géolocalisation IP</a>
     <a class="nav-item" onclick="showSection('wayback',this)">🕰️ Archives Web</a>
     <a class="nav-item" onclick="showSection('dorking',this)">🔍 Google Dorking</a>
@@ -105,30 +121,96 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;background:
 
 <main class="main">
   <div class="notice">
-    <strong>⚠️ Avertissement :</strong> Cet outil utilise exclusivement des APIs publiques (ip-api.com, Internet Archive, ipify.org). Aucune base de données privée n'est interrogée. Usage éducatif uniquement, conformément à la loi n°78-17 du 6 janvier 1978.
+    <strong>⚠️ Avertissement :</strong> La section "Fiche identité" interroge la base BrixHub via API authentifiée. Les autres modules utilisent des APIs publiques (ip-api.com, Internet Archive, ipify.org). Usage strictement personnel et éducatif, conformément à la loi n°78-17 du 6 janvier 1978.
   </div>
 
   <!-- IDENTITÉ -->
   <div class="section-card active" id="sec-identite">
     <div class="card-header">
       <div class="card-icon">🪪</div>
-      <div class="card-header-text"><h2>Fiche d'identité — Saisie manuelle</h2><p>Création et horodatage d'une fiche locale</p></div>
+      <div class="card-header-text"><h2>Recherche d'identité — BrixHub</h2><p>Interrogation de la base BrixHub via l'API officielle</p></div>
     </div>
     <div class="card-body">
-      <div class="form-grid">
-        <div class="form-group"><label>Nom de famille</label><input type="text" id="nom" placeholder="DUPONT"></div>
-        <div class="form-group"><label>Prénom(s)</label><input type="text" id="prenom" placeholder="Jean-Pierre"></div>
-        <div class="form-group"><label>Date de naissance</label><input type="date" id="dob"></div>
-        <div class="form-group"><label>N° d'immatriculation</label><input type="text" id="immat" placeholder="AB-123-CD" maxlength="9" oninput="formatImmat(this)"></div>
-        <div class="form-group" style="grid-column:1/-1"><label>Adresse</label><input type="text" id="adresse" placeholder="12 rue de la Paix"></div>
-        <div class="form-group"><label>Code postal</label><input type="text" id="cp" placeholder="75001" maxlength="5" oninput="this.value=this.value.replace(/\D/g,'')"></div>
-        <div class="form-group"><label>Ville</label><input type="text" id="ville" placeholder="Paris"></div>
+
+      <!-- Onglets -->
+      <div style="display:flex;gap:0;border:1px solid var(--gris-moyen);border-radius:8px;overflow:hidden;margin-bottom:22px;flex-wrap:wrap">
+        <button class="brix-tab active" id="tab-search" onclick="switchBrixTab('search')">🔎 Recherche multi-critères</button>
+        <button class="brix-tab" id="tab-email" onclick="switchBrixTab('email')">📧 Lookup Email</button>
+        <button class="brix-tab" id="tab-phone" onclick="switchBrixTab('phone')">📱 Lookup Téléphone</button>
+        <button class="brix-tab" id="tab-iban" onclick="switchBrixTab('iban')">🏦 Lookup IBAN</button>
+        <button class="brix-tab" id="tab-quota" onclick="switchBrixTab('quota');loadBrixQuota()">📊 Mon quota</button>
       </div>
-      <div style="margin-top:20px;display:flex;gap:10px">
-        <button class="btn btn-primary" onclick="generateFiche()">📋 Générer la fiche</button>
-        <button class="btn btn-neutral" onclick="clearFiche()">🗑️ Effacer</button>
+
+      <!-- Panneau : recherche multi-critères -->
+      <div id="brix-panel-search">
+        <p style="font-size:12px;color:var(--gris-texte);margin-bottom:14px">Renseignez un ou plusieurs critères. Les champs vides sont ignorés.</p>
+        <div class="form-grid">
+          <div class="form-group"><label>Nom de famille</label><input type="text" id="b-nom" placeholder="Dupont"></div>
+          <div class="form-group"><label>Prénom</label><input type="text" id="b-prenom" placeholder="Jean"></div>
+          <div class="form-group"><label>Email</label><input type="text" id="b-email" placeholder="jean@example.com"></div>
+          <div class="form-group"><label>Téléphone</label><input type="text" id="b-tel" placeholder="0612345678"></div>
+          <div class="form-group"><label>Code postal</label><input type="text" id="b-cp" placeholder="75001" maxlength="5"></div>
+          <div class="form-group"><label>Ville</label><input type="text" id="b-ville" placeholder="Paris"></div>
+          <div class="form-group"><label>Immatriculation</label><input type="text" id="b-immat" placeholder="AB-123-CD"></div>
+          <div class="form-group"><label>N° sécurité sociale</label><input type="text" id="b-nir" placeholder="1 85 12 75 XXX XXX XX"></div>
+          <div class="form-group"><label>Date de naissance</label><input type="text" id="b-dob" placeholder="YYYY-MM-DD"></div>
+          <div class="form-group"><label>IBAN</label><input type="text" id="b-iban" placeholder="FR76..."></div>
+          <div class="form-group"><label>Résultats / page</label>
+            <select id="b-perpage">
+              <option value="10" selected>10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Page</label><input type="number" id="b-page" value="1" min="1" style="width:80px"></div>
+        </div>
+        <div style="margin-top:6px;display:flex;align-items:center;gap:12px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer">
+            <input type="checkbox" id="b-flexible"> <span style="font-weight:600;color:var(--bleu)">Recherche flexible</span> <span style="color:var(--gris-texte)">(contient au lieu de exact)</span>
+          </label>
+        </div>
+        <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="brixSearch()">🔎 Lancer la recherche</button>
+          <button class="btn btn-neutral" onclick="brixClearSearch()">🗑️ Effacer</button>
+        </div>
       </div>
-      <div class="result-box" id="res-identite"></div>
+
+      <!-- Panneau : lookup email -->
+      <div id="brix-panel-email" style="display:none">
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+          <div class="form-group" style="flex:1;min-width:260px"><label>Adresse email</label><input type="text" id="b-lookup-email" placeholder="jean.dupont@gmail.com"></div>
+          <button class="btn btn-primary" onclick="brixLookup('email')">🔎 Rechercher</button>
+        </div>
+      </div>
+
+      <!-- Panneau : lookup téléphone -->
+      <div id="brix-panel-phone" style="display:none">
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+          <div class="form-group" style="flex:1;min-width:260px"><label>Numéro de téléphone</label><input type="text" id="b-lookup-phone" placeholder="0612345678 ou +33612345678"></div>
+          <button class="btn btn-primary" onclick="brixLookup('phone')">🔎 Rechercher</button>
+        </div>
+      </div>
+
+      <!-- Panneau : lookup IBAN -->
+      <div id="brix-panel-iban" style="display:none">
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+          <div class="form-group" style="flex:1;min-width:260px"><label>IBAN</label><input type="text" id="b-lookup-iban" placeholder="FR7630006000011234567890189"></div>
+          <button class="btn btn-primary" onclick="brixLookup('iban')">🔎 Rechercher</button>
+        </div>
+      </div>
+
+      <!-- Panneau : quota -->
+      <div id="brix-panel-quota" style="display:none">
+        <div id="brix-quota-content" style="color:var(--gris-texte);font-size:13px">Chargement…</div>
+      </div>
+
+      <!-- Loader & résultats communs -->
+      <div class="loader" id="loader-brix"><div class="spinner"></div> Interrogation de BrixHub…</div>
+      <div id="brix-quota-bar" style="display:none;margin-top:14px;background:#f0f4ff;border:1px solid #c7d5f8;border-radius:6px;padding:10px 14px;font-size:12px;display:none">
+        <span id="brix-quota-label" style="color:var(--bleu);font-weight:700"></span>
+      </div>
+      <div class="result-box" id="res-brix"></div>
     </div>
   </div>
 
@@ -252,7 +334,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;background:
   </div>
 </main>
 
-<div class="footer">Outil OSINT — Sources ouvertes uniquement &nbsp;|&nbsp; APIs publiques gratuites &nbsp;|&nbsp; Usage éducatif</div>
+<div class="footer">Outil OSINT — BrixHub API intégrée &nbsp;|&nbsp; APIs publiques &nbsp;|&nbsp; Usage éducatif</div>
 
 <script>
 function showSection(name,el){
@@ -269,43 +351,266 @@ function showLoader(id){document.getElementById(id).classList.add('show')}
 function hideLoader(id){document.getElementById(id).classList.remove('show')}
 function formatSize(b){if(b<1024)return b+' o';if(b<1048576)return(b/1024).toFixed(1)+' Ko';return(b/1048576).toFixed(2)+' Mo'}
 
-// IDENTITÉ
+// ========== BRIXHUB API ==========
+const BRIX_KEY = 'brix_EA_ZxYXvMeweLGma_Oc7MlrnWLoKGWOFFjrnEg9K2AgBHqlJ';
+const BRIX_BASE = 'https://brixhub.net/api/v1';
+
+// Essaie plusieurs proxies CORS dans l'ordre, affiche un diagnostic détaillé si tout échoue.
+const BRIX_PROXIES = [
+  url => 'https://corsproxy.io/?' + encodeURIComponent(url),
+  url => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+  url => 'https://thingproxy.freeboard.io/fetch/' + url,
+];
+
+async function brixFetch(path, options = {}) {
+  const targetUrl = BRIX_BASE + path;
+  const method    = options.method || 'GET';
+  const log       = [];
+
+  for (let i = 0; i < BRIX_PROXIES.length; i++) {
+    const proxyUrl = BRIX_PROXIES[i](targetUrl);
+    const label    = ['corsproxy.io', 'allorigins.win', 'thingproxy'][i];
+    let httpStatus = '—';
+    try {
+      const fetchOptions = {
+        method,
+        headers: { 'X-API-Key': BRIX_KEY, 'Content-Type': 'application/json' }
+      };
+      if (options.body) fetchOptions.body = options.body;
+
+      const r    = await fetch(proxyUrl, fetchOptions);
+      httpStatus = r.status;
+      const text = await r.text();
+      const first = text.trim().slice(0, 80);
+
+      try {
+        const parsed = JSON.parse(text);
+        log.push('✅ ' + label + ' → HTTP ' + httpStatus + ' → JSON OK');
+        return { json: parsed, headers: r.headers, _proxy: label };
+      } catch {
+        log.push('⚠️ ' + label + ' → HTTP ' + httpStatus + ' → non-JSON : "' + first + '"');
+      }
+    } catch (err) {
+      log.push('❌ ' + label + ' → ' + err.name + ' : ' + err.message);
+    }
+  }
+
+  const diag = log.map((l, i) => '<div style="margin:3px 0">[Proxy ' + (i+1) + '] ' + l + '</div>').join('');
+  const html = '<div style="font-weight:700;color:var(--rouge);margin-bottom:10px">❌ Impossible de joindre BrixHub via les proxies CORS</div>'
+    + '<div style="background:#1e1e1e;color:#f8f8f2;font-family:\'Courier New\',monospace;font-size:11.5px;padding:12px 14px;border-radius:6px;line-height:1.9">' + diag + '</div>'
+    + '<div style="margin-top:12px;font-size:12px;color:var(--gris-texte)">💡 <strong>Solutions :</strong> désactivez votre bloqueur de pubs/extensions (uBlock, etc.) qui peuvent bloquer les proxies, ou ouvrez la console (F12) pour voir l\'erreur exacte.</div>';
+  throw { __brixDiag: html };
+}
+
+function switchBrixTab(tab) {
+  ['search','email','phone','iban','quota'].forEach(t => {
+    document.getElementById('brix-panel-'+t).style.display = t===tab ? '' : 'none';
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+  });
+  hideResult('res-brix');
+}
+
+function brixClearSearch() {
+  ['b-nom','b-prenom','b-email','b-tel','b-cp','b-ville','b-immat','b-nir','b-dob','b-iban'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  document.getElementById('b-flexible').checked = false;
+  document.getElementById('b-page').value = '1';
+  hideResult('res-brix');
+}
+
+async function brixSearch() {
+  const body = {};
+  const map = {
+    'b-nom': 'nom_famille', 'b-prenom': 'prenom', 'b-email': 'email',
+    'b-tel': 'telephone', 'b-cp': 'code_postal', 'b-ville': 'ville',
+    'b-immat': 'immatriculation', 'b-nir': 'nir', 'b-dob': 'date_naissance',
+    'b-iban': 'iban'
+  };
+  let hasField = false;
+  for(const [id, field] of Object.entries(map)) {
+    const v = document.getElementById(id)?.value.trim();
+    if(v) { body[field] = v; hasField = true; }
+  }
+  if(!hasField) { alert('Veuillez renseigner au moins un critère de recherche.'); return; }
+  body.flexible = document.getElementById('b-flexible').checked;
+  body.per_page = parseInt(document.getElementById('b-perpage').value) || 10;
+  body.page = parseInt(document.getElementById('b-page').value) || 1;
+
+  showLoader('loader-brix'); hideResult('res-brix');
+  try {
+    const { json: d, headers } = await brixFetch('/search', {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+    hideLoader('loader-brix');
+    updateQuotaBar(headers);
+    if(d.status !== 200) { showResult('res-brix', brixError(d)); return; }
+    showResult('res-brix', brixRenderResults(d));
+  } catch(e) {
+    hideLoader('loader-brix');
+    showResult('res-brix', e.__brixDiag || '<div style="color:var(--rouge)">❌ ' + (e.message||String(e)) + '</div>');
+  }
+}
+
+async function brixLookup(type) {
+  const inputId = 'b-lookup-'+type;
+  const val = document.getElementById(inputId)?.value.trim();
+  if(!val) { alert('Veuillez entrer une valeur.'); return; }
+  showLoader('loader-brix'); hideResult('res-brix');
+  try {
+    const { json: d, headers } = await brixFetch('/lookup/'+type+'/'+encodeURIComponent(val));
+    hideLoader('loader-brix');
+    updateQuotaBar(headers);
+    if(d.status !== 200) { showResult('res-brix', brixError(d)); return; }
+    showResult('res-brix', brixRenderResults(d));
+  } catch(e) {
+    hideLoader('loader-brix');
+    showResult('res-brix', e.__brixDiag || '<div style="color:var(--rouge)">❌ ' + (e.message||String(e)) + '</div>');
+  }
+}
+
+async function loadBrixQuota() {
+  const el = document.getElementById('brix-quota-content');
+  el.innerHTML = '<span style="color:var(--bleu)">⏳ Chargement…</span>';
+  try {
+    const { json: d } = await brixFetch('/me');
+    if(d.status !== 200) { el.innerHTML = brixError(d); return; }
+    const info = d.data;
+    const pct = info.daily_quota > 0 ? Math.round((info.daily_used / info.daily_quota) * 100) : 0;
+    const barColor = pct > 80 ? 'var(--rouge)' : pct > 50 ? 'var(--orange)' : 'var(--vert-ok)';
+    el.innerHTML = `
+      <div style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap">
+        <span class="tag tag-green">Plan : ${info.plan||'—'}</span>
+        <span class="tag tag-grey">Quota/jour : ${(info.daily_quota||0).toLocaleString('fr-FR')}</span>
+        <span class="tag tag-grey">Total requêtes : ${(info.total_requests||0).toLocaleString('fr-FR')}</span>
+        <span class="tag ${info.pagination_enabled?'tag-green':'tag-orange'}">Pagination : ${info.pagination_enabled?'✅ Activée':'❌ Désactivée'}</span>
+      </div>
+      <div style="font-size:12.5px;margin-bottom:8px">
+        <strong>${(info.daily_used||0).toLocaleString('fr-FR')}</strong> utilisées sur <strong>${(info.daily_quota||0).toLocaleString('fr-FR')}</strong> — <strong style="color:${barColor}">${pct}%</strong> consommé
+      </div>
+      <div style="background:var(--gris-moyen);border-radius:20px;height:10px;overflow:hidden;margin-bottom:6px">
+        <div style="background:${barColor};height:100%;width:${pct}%;transition:width .4s;border-radius:20px"></div>
+      </div>
+      <div style="font-size:11.5px;color:var(--gris-texte)">
+        <strong style="color:var(--vert-ok)">${(info.daily_remaining||0).toLocaleString('fr-FR')}</strong> requêtes restantes aujourd'hui · Réinitialisation à minuit UTC
+      </div>`;
+  } catch(e) {
+    el.innerHTML = e.__brixDiag || '<div style="color:var(--rouge)">❌ ' + (e.message||String(e)) + '</div>';
+  }
+}
+
+function updateQuotaBar(headers) {
+  try {
+    const remaining = headers.get('X-RateLimit-Remaining-Day');
+    const limit = headers.get('X-RateLimit-Limit-Day');
+    if(remaining !== null && limit !== null) {
+      const bar = document.getElementById('brix-quota-bar');
+      document.getElementById('brix-quota-label').textContent =
+        '📊 Quota restant : '+parseInt(remaining).toLocaleString('fr-FR')+' / '+parseInt(limit).toLocaleString('fr-FR')+' requêtes aujourd\'hui';
+      bar.style.display = 'block';
+    }
+  } catch(e) {}
+}
+
+function brixError(d) {
+  const type = d.error?.type || '';
+  const msg = d.message || 'Erreur inconnue';
+  const tips = {
+    'unauthorized': '🔑 Clé API invalide ou manquante.',
+    'expired': '⏳ Clé API expirée — régénérez-la depuis le dashboard BrixHub.',
+    'quota_exceeded': '🚫 Quota journalier dépassé — réessayez demain à minuit UTC.',
+    'rate_limited': '⏱️ Trop de requêtes par minute — attendez 60 secondes.',
+    'plan_limited': '📦 Fonctionnalité non disponible sur votre plan actuel.',
+    'bad_request': '⚠️ Paramètres invalides — vérifiez votre saisie.',
+  };
+  const tip = tips[type] || '';
+  return `<div style="color:var(--rouge);font-weight:700">❌ ${msg}</div>${tip?'<div style="margin-top:8px;font-size:12px;color:var(--gris-texte)">'+tip+'</div>':''}`;
+}
+
+function brixRenderResults(d) {
+  const results = d.data?.results || [];
+  const meta = d.meta || {};
+  if(results.length === 0) {
+    return '<div style="color:var(--gris-texte);font-size:13px">🔍 Aucun résultat trouvé.</div>';
+  }
+
+  const LABELS = {
+    nom_famille:'Nom de famille', prenom:'Prénom', email:'Email', telephone:'Téléphone', mobile:'Mobile',
+    adresse:'Adresse', complement_adresse:'Complément', code_postal:'Code postal', ville:'Ville',
+    region:'Région', departement:'Département', pays:'Pays', date_naissance:'Date de naissance',
+    annee_naissance:'Année de naissance', genre:'Genre', civilite:'Civilité', nom_naissance:'Nom de naissance',
+    nom_affichage:'Nom affiché', nom_utilisateur:'Nom d\'utilisateur', nir:'NIR (sécu)', iban:'IBAN',
+    bic:'BIC', siret:'SIRET', siren:'SIREN', immatriculation:'Immatriculation', vin_plaque:'VIN/Plaque',
+    marque:'Marque', modele:'Modèle', societe:'Société', profession:'Profession', fonction:'Fonction',
+    discord_id:'Discord ID', steam_id:'Steam ID', adresse_ip:'Adresse IP',
+    ville_naissance:'Ville de naissance', lieu_naissance:'Lieu de naissance'
+  };
+  const SKIP = ['_sources','_confidence'];
+
+  let metaBar = `<div class="brix-meta">
+    Résultats : <span>${(meta.total||0).toLocaleString('fr-FR')}${meta.total_is_capped?' (plafonné)':''}</span>
+    Page : <span>${meta.page||1} / ${meta.pages||1}</span>
+    Temps : <span>${meta.took_ms||'—'} ms</span>
+    Affichés : <span>${results.length}</span>
+  </div>`;
+
+  let cards = results.map((p, i) => {
+    const nom = [p.prenom, p.nom_famille].filter(Boolean).join(' ') || p.nom_affichage || p.nom_utilisateur || `Profil #${i+1}`;
+    const conf = p._confidence ?? '?';
+    const confColor = conf >= 75 ? 'tag-green' : conf >= 40 ? 'tag-orange' : 'tag-red';
+    const fields = Object.entries(p)
+      .filter(([k, v]) => !SKIP.includes(k) && v !== null && v !== undefined && v !== '')
+      .map(([k, v]) => {
+        const label = LABELS[k] || k;
+        return `<div class="brix-field"><span class="brix-field-key">${label}</span><span>${v}</span></div>`;
+      }).join('');
+    const sources = (p._sources || []).map(s => `<span class="brix-source-tag">${s}</span>`).join('');
+    return `<div class="brix-profile">
+      <div class="brix-profile-header">
+        <span class="brix-profile-name">👤 ${nom}</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span class="tag ${confColor}">Confiance : ${conf}%</span>
+        </div>
+      </div>
+      <div class="brix-profile-body">
+        ${fields}
+        ${sources ? '<div style="margin-top:10px;font-size:11px;font-weight:700;color:var(--gris-texte);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Sources</div><div class="brix-sources">'+sources+'</div>' : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Paginateur
+  let pager = '';
+  if((meta.pages||1) > 1) {
+    const cur = meta.page || 1;
+    const total = meta.pages;
+    pager = `<div class="brix-pager">
+      ${cur > 1 ? `<button class="btn btn-sm btn-primary" onclick="brixGoPage(${cur-1})">← Préc.</button>` : ''}
+      <span style="font-size:12px;color:var(--gris-texte)">Page ${cur} / ${total}</span>
+      ${cur < total ? `<button class="btn btn-sm btn-primary" onclick="brixGoPage(${cur+1})">Suiv. →</button>` : ''}
+    </div>`;
+  }
+
+  return metaBar + cards + pager;
+}
+
+function brixGoPage(page) {
+  document.getElementById('b-page').value = page;
+  brixSearch();
+  document.getElementById('sec-identite').scrollIntoView({behavior:'smooth'});
+}
+
+// IDENTITÉ (anciennes fonctions conservées pour compatibilité)
 function formatImmat(el){
   let v=el.value.replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
   if(v.length>2&&v.length<=5)v=v.slice(0,2)+'-'+v.slice(2);
   if(v.length>6)v=v.slice(0,6)+'-'+v.slice(6,8);
   el.value=v;
 }
-function generateFiche(){
-  const nom=document.getElementById('nom').value.trim().toUpperCase();
-  const prenom=document.getElementById('prenom').value.trim();
-  const dob=document.getElementById('dob').value;
-  const immat=document.getElementById('immat').value.trim().toUpperCase();
-  const adresse=document.getElementById('adresse').value.trim();
-  const cp=document.getElementById('cp').value.trim();
-  const ville=document.getElementById('ville').value.trim().toUpperCase();
-  if(!nom&&!prenom){alert('Veuillez renseigner au moins le nom ou le prénom.');return}
-  const age=dob?Math.floor((new Date()-new Date(dob))/31557600000):null;
-  const ref='FIC-'+Math.random().toString(36).substr(2,6).toUpperCase()+'-'+new Date().getFullYear();
-  showResult('res-identite',`
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <span style="font-size:14px;font-weight:700;color:var(--bleu)">FICHE D'IDENTITÉ</span>
-      <span class="tag tag-green">✅ Générée</span>
-    </div>
-    ${row('Référence','<code>'+ref+'</code>')}
-    ${nom?row('Nom','<strong>'+nom+'</strong>'):''}
-    ${prenom?row('Prénom(s)',prenom):''}
-    ${dob?row('Date de naissance',new Date(dob).toLocaleDateString('fr-FR')+(age?' — '+age+' ans':'')):''}
-    ${immat?row('Immatriculation','<code>'+immat+'</code>'):''}
-    ${adresse?row('Adresse',adresse):''}
-    ${cp||ville?row('Code postal / Ville',[cp,ville].filter(Boolean).join(' — ')):''}
-    ${row('Horodatage',new Date().toLocaleString('fr-FR'))}
-  `);
-}
-function clearFiche(){
-  ['nom','prenom','dob','immat','adresse','cp','ville'].forEach(id=>document.getElementById(id).value='');
-  hideResult('res-identite');
-}
+function generateFiche(){}
+function clearFiche(){}
 
 // IP LOOKUP — ip-api.com supporte CORS nativement
 async function lookupIP(){
