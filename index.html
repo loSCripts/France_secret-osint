@@ -5,6 +5,206 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OSINT — Outil d'investigation numérique</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
+<!-- @vladmandic/face-api (fork maintenu, modèles inclus dans le package) -->
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+<style>
+/* ===== FACE AUTH OVERLAY ===== */
+#face-auth-overlay {
+  position: fixed; inset: 0; z-index: 99999;
+  background: #0a0f1e;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Segoe UI', system-ui, Arial, sans-serif;
+}
+#face-auth-overlay.hidden { display: none; }
+
+.fa-card {
+  background: #111827;
+  border: 1px solid #1e3a5f;
+  border-radius: 16px;
+  padding: 36px 40px 32px;
+  width: 420px; max-width: 95vw;
+  box-shadow: 0 0 60px rgba(0,49,137,.35), 0 0 120px rgba(0,49,137,.1);
+  text-align: center;
+}
+
+.fa-logo {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-bottom: 28px;
+}
+.fa-drapeau {
+  display: flex; width: 36px; height: 24px; border-radius: 3px; overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.4); flex-shrink: 0;
+}
+.fa-drapeau div { flex: 1; height: 100%; }
+.fa-drapeau .b { background: #003189; }
+.fa-drapeau .w { background: #fff; }
+.fa-drapeau .r { background: #ED2939; }
+.fa-title { font-size: 15px; font-weight: 800; color: #fff; letter-spacing: .02em; }
+.fa-subtitle { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: .08em; margin-top: 1px; }
+
+/* Camera frame */
+.fa-cam-wrap {
+  position: relative; width: 240px; height: 240px;
+  margin: 0 auto 22px; border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #1e3a5f;
+  box-shadow: 0 0 0 6px rgba(0,49,137,.12), 0 0 40px rgba(0,49,137,.2);
+  background: #0a0f1e;
+  transition: border-color .3s, box-shadow .3s;
+}
+.fa-cam-wrap.scanning {
+  border-color: #003189;
+  box-shadow: 0 0 0 6px rgba(0,49,137,.2), 0 0 40px rgba(0,49,137,.4);
+  animation: fa-pulse 2s ease-in-out infinite;
+}
+.fa-cam-wrap.success {
+  border-color: #059669;
+  box-shadow: 0 0 0 6px rgba(5,150,105,.2), 0 0 50px rgba(5,150,105,.5);
+}
+.fa-cam-wrap.error {
+  border-color: #ED2939;
+  box-shadow: 0 0 0 6px rgba(237,41,57,.2), 0 0 50px rgba(237,41,57,.5);
+}
+@keyframes fa-pulse {
+  0%, 100% { box-shadow: 0 0 0 6px rgba(0,49,137,.2), 0 0 40px rgba(0,49,137,.4); }
+  50% { box-shadow: 0 0 0 10px rgba(0,49,137,.35), 0 0 70px rgba(0,49,137,.6); }
+}
+
+#fa-video {
+  width: 100%; height: 100%; object-fit: cover;
+  transform: scaleX(-1); /* miroir naturel */
+}
+#fa-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  transform: scaleX(-1);
+  pointer-events: none;
+}
+
+/* Scan line animation */
+.fa-scan-line {
+  position: absolute; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0,161,255,.8), transparent);
+  animation: fa-scan 2.5s linear infinite;
+  pointer-events: none; display: none;
+}
+.scanning .fa-scan-line { display: block; }
+@keyframes fa-scan { 0% { top: 0%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+
+/* Corner brackets */
+.fa-corner {
+  position: absolute; width: 20px; height: 20px;
+  border-color: #003189; border-style: solid; opacity: .7;
+}
+.fa-corner.tl { top: 8px; left: 8px; border-width: 2px 0 0 2px; }
+.fa-corner.tr { top: 8px; right: 8px; border-width: 2px 2px 0 0; }
+.fa-corner.bl { bottom: 8px; left: 8px; border-width: 0 0 2px 2px; }
+.fa-corner.br { bottom: 8px; right: 8px; border-width: 0 2px 2px 0; }
+
+/* Status */
+.fa-status {
+  font-size: 13px; font-weight: 600; min-height: 20px;
+  margin-bottom: 18px; transition: color .3s;
+  color: #6b7280;
+}
+.fa-status.active { color: #60a5fa; }
+.fa-status.ok { color: #34d399; }
+.fa-status.fail { color: #f87171; }
+.fa-status.warn { color: #fbbf24; }
+
+/* Confidence bar */
+.fa-bar-wrap {
+  background: #1f2937; border-radius: 10px; height: 8px;
+  overflow: hidden; margin-bottom: 8px; display: none;
+}
+.fa-bar-wrap.show { display: block; }
+.fa-bar-inner {
+  height: 100%; border-radius: 10px; width: 0%;
+  transition: width .4s ease, background .4s;
+  background: #003189;
+}
+.fa-bar-label {
+  font-size: 11px; color: #9ca3af; margin-bottom: 18px;
+  display: none;
+}
+.fa-bar-label.show { display: block; }
+
+/* Buttons */
+.fa-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 28px; border: none; border-radius: 8px;
+  cursor: pointer; font-size: 13px; font-weight: 700;
+  letter-spacing: .04em; font-family: inherit;
+  text-transform: uppercase; transition: all .15s;
+  width: 100%; justify-content: center; margin-bottom: 10px;
+}
+.fa-btn-primary { background: #003189; color: #fff; }
+.fa-btn-primary:hover { background: #1e4db7; }
+.fa-btn-primary:disabled { background: #1f2937; color: #4b5563; cursor: not-allowed; }
+.fa-btn-danger { background: #7f1d1d; color: #fca5a5; }
+.fa-btn-danger:hover { background: #991b1b; }
+.fa-btn-ghost { background: transparent; color: #6b7280; font-size: 11px; padding: 6px 12px; width: auto; }
+.fa-btn-ghost:hover { color: #9ca3af; }
+
+/* Mode selector */
+.fa-modes {
+  display: flex; gap: 0; border-radius: 8px; overflow: hidden;
+  border: 1px solid #1e3a5f; margin-bottom: 22px;
+}
+.fa-mode-btn {
+  flex: 1; padding: 9px 8px; background: transparent; border: none;
+  color: #6b7280; font-size: 11.5px; font-weight: 700;
+  cursor: pointer; font-family: inherit; letter-spacing: .03em;
+  transition: all .15s; border-right: 1px solid #1e3a5f;
+}
+.fa-mode-btn:last-child { border-right: none; }
+.fa-mode-btn.active { background: #003189; color: #fff; }
+.fa-mode-btn:hover:not(.active) { background: #1a2744; color: #93c5fd; }
+
+/* Loading state */
+.fa-loading {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 14px; padding: 20px 0;
+}
+.fa-spinner {
+  width: 36px; height: 36px;
+  border: 3px solid #1f2937;
+  border-top-color: #003189;
+  border-radius: 50%;
+  animation: fa-spin .8s linear infinite;
+}
+@keyframes fa-spin { to { transform: rotate(360deg); } }
+.fa-loading-text { color: #6b7280; font-size: 12.5px; }
+
+/* Attempt counter */
+.fa-attempts { font-size: 11px; color: #6b7280; margin-top: 4px; }
+.fa-attempts span { color: #f87171; font-weight: 700; }
+
+/* Lockout */
+.fa-lockout {
+  background: rgba(127,29,29,.15); border: 1px solid #7f1d1d;
+  border-radius: 8px; padding: 14px 16px; margin-bottom: 18px;
+  display: none;
+}
+.fa-lockout.show { display: block; }
+.fa-lockout-title { color: #f87171; font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+.fa-lockout-msg { color: #fca5a5; font-size: 12px; }
+
+/* Enrolled badge */
+.fa-enrolled-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(5,150,105,.1); border: 1px solid rgba(5,150,105,.3);
+  color: #34d399; border-radius: 20px; padding: 3px 12px;
+  font-size: 11px; font-weight: 700; margin-bottom: 16px;
+  display: none;
+}
+.fa-enrolled-badge.show { display: inline-flex; }
+
+/* Security info */
+.fa-info {
+  font-size: 10.5px; color: #4b5563; margin-top: 14px; line-height: 1.6;
+  border-top: 1px solid #1f2937; padding-top: 12px;
+}
+</style>
 <style>
 :root{--bleu:#003189;--bleu-clair:#1e4db7;--rouge:#ED2939;--blanc:#fff;--gris-clair:#f7f8fa;--gris-moyen:#e2e6ea;--gris-texte:#6b7280;--noir:#111827;--vert-ok:#059669;--orange:#d97706;--shadow:0 1px 4px rgba(0,0,0,.07);--shadow-lg:0 4px 24px rgba(0,0,0,.10)}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -96,6 +296,87 @@ body{font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;background:
 </style>
 </head>
 <body>
+
+<!-- ===== FACE AUTHENTICATION OVERLAY ===== -->
+<div id="face-auth-overlay">
+  <div class="fa-card">
+
+    <div class="fa-logo">
+      <div class="fa-drapeau"><div class="b"></div><div class="w"></div><div class="r"></div></div>
+      <div>
+        <div class="fa-title">OSINT — Accès sécurisé</div>
+        <div class="fa-subtitle">Authentification biométrique</div>
+      </div>
+    </div>
+
+    <!-- Chargement des modèles -->
+    <div id="fa-phase-loading" class="fa-loading">
+      <div class="fa-spinner"></div>
+      <div class="fa-loading-text" id="fa-load-msg">Chargement des modèles IA…</div>
+    </div>
+
+    <!-- Phase d'auth principale -->
+    <div id="fa-phase-main" style="display:none">
+
+      <!-- Sélecteur mode -->
+      <div class="fa-modes" id="fa-modes">
+        <button class="fa-mode-btn active" id="fa-tab-verify" onclick="faSwitchMode('verify')">🔐 Connexion</button>
+        <button class="fa-mode-btn" id="fa-tab-enroll" onclick="faSwitchMode('enroll')">➕ Enrôlement</button>
+      </div>
+
+      <!-- Badge visage enrôlé -->
+      <div class="fa-enrolled-badge" id="fa-enrolled-badge">✅ Visage enregistré</div>
+
+      <!-- Caméra -->
+      <div class="fa-cam-wrap" id="fa-cam-wrap">
+        <video id="fa-video" autoplay muted playsinline></video>
+        <canvas id="fa-canvas"></canvas>
+        <div class="fa-scan-line"></div>
+        <div class="fa-corner tl"></div>
+        <div class="fa-corner tr"></div>
+        <div class="fa-corner bl"></div>
+        <div class="fa-corner br"></div>
+      </div>
+
+      <!-- Barre de confiance -->
+      <div class="fa-bar-wrap" id="fa-bar-wrap">
+        <div class="fa-bar-inner" id="fa-bar-inner"></div>
+      </div>
+      <div class="fa-bar-label" id="fa-bar-label"></div>
+
+      <!-- Statut -->
+      <div class="fa-status" id="fa-status">Initialisation de la caméra…</div>
+
+      <!-- Lockout -->
+      <div class="fa-lockout" id="fa-lockout">
+        <div class="fa-lockout-title">🔒 Accès temporairement bloqué</div>
+        <div class="fa-lockout-msg" id="fa-lockout-msg"></div>
+      </div>
+
+      <!-- Compteur tentatives -->
+      <div class="fa-attempts" id="fa-attempts"></div>
+
+      <!-- Bouton action -->
+      <button class="fa-btn fa-btn-primary" id="fa-btn-main" onclick="faAction()" disabled>
+        ⏳ Chargement…
+      </button>
+
+      <!-- Réinitialiser -->
+      <div style="text-align:center;margin-top:4px">
+        <button class="fa-btn fa-btn-ghost" id="fa-btn-reset" onclick="faResetEnrollment()" style="display:none">
+          🗑️ Supprimer le visage enregistré
+        </button>
+      </div>
+
+      <div class="fa-info">
+        🔒 Traitement 100% local — aucune donnée biométrique envoyée vers un serveur.<br>
+        L'empreinte faciale est chiffrée et stockée uniquement dans votre navigateur.
+      </div>
+    </div>
+
+  </div>
+</div>
+<!-- ===== FIN OVERLAY ===== -->
 
 <div class="header-band">
   <div class="header-top">
@@ -583,6 +864,45 @@ function brixRenderResults(d) {
         ${sources ? '<div style="margin-top:10px;font-size:11px;font-weight:700;color:var(--gris-texte);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Sources</div><div class="brix-sources">'+sources+'</div>' : ''}
       </div>
     </div>`;
+  }).join('');
+  return metaBar + cards;
+}
+
+function brixRenderClientPage() {
+  const total   = _brixAllResults.length;
+  const pages   = Math.max(1, Math.ceil(total / BRIX_PAGE_SIZE));
+  const page    = Math.min(_brixClientPage, pages);
+  const start   = (page - 1) * BRIX_PAGE_SIZE;
+  const slice   = _brixAllResults.slice(start, start + BRIX_PAGE_SIZE);
+
+  // Fabrique un objet d partiel pour réutiliser brixRenderResults
+  const fakeD = {
+    data: { results: slice },
+    meta: Object.assign({}, _brixMeta, {
+      page:  page,
+      pages: pages,
+      total: _brixMeta.total || total
+    })
+  };
+
+  let pager = '';
+  if(pages > 1) {
+    pager = `<div class="brix-pager">
+      <button class="btn btn-sm btn-neutral" onclick="brixGoPage(${page-1})" ${page<=1?'disabled':''}>◀ Préc.</button>
+      <span style="font-size:12px;color:var(--bleu);font-weight:700">Page ${page} / ${pages}</span>
+      <button class="btn btn-sm btn-neutral" onclick="brixGoPage(${page+1})" ${page>=pages?'disabled':''}>Suiv. ▶</button>
+    </div>`;
+  }
+
+  return brixRenderResults(fakeD) + pager;
+}
+
+function brixGoPage(p) {
+  const pages = Math.max(1, Math.ceil(_brixAllResults.length / BRIX_PAGE_SIZE));
+  _brixClientPage = Math.max(1, Math.min(p, pages));
+  showResult('res-brix', brixRenderClientPage());
+}
+
 // IDENTITÉ (anciennes fonctions conservées pour compatibilité)
 function formatImmat(el){
   let v=el.value.replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
@@ -806,5 +1126,462 @@ function renderMeta(all){
   showResult('res-metadata','<div style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><span style="font-weight:700;font-size:12px;color:var(--bleu);text-transform:uppercase;letter-spacing:.04em">'+Object.keys(all).length+' propriétés extraites</span><span class="tag '+(gpsE.length>0?'tag-red':'tag-green')+'">'+(gpsE.length>0?'⚠️ GPS intégré ('+gpsE.length+' champs)':'✅ Pas de GPS')+'</span></div><table class="meta-table"><thead><tr><th>Propriété</th><th>Valeur</th></tr></thead><tbody>'+mkRows(otherE)+'</tbody></table>'+gpsSection);
 }
 </script>
+
+<!-- ===== FACE-API.JS AUTHENTICATION ENGINE ===== -->
+<script>
+(function() {
+
+  // ── Constantes ──────────────────────────────────────────────────────────────
+  const STORAGE_KEY   = 'osint_face_descriptor_v1';
+  const THRESHOLD     = 0.52;   // distance euclidienne (≤ = match). 0.52 ≈ 65% similarité
+  const MAX_ATTEMPTS  = 5;
+  const LOCKOUT_MS    = 5 * 60 * 1000;  // 5 minutes
+  const MODELS_URL    = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+  const ENROLL_FRAMES = 5;       // nb de captures pour stabiliser l'enrôlement
+  const VERIFY_INTERVAL_MS = 700;
+
+  // ── État ────────────────────────────────────────────────────────────────────
+  let mode            = 'verify';   // 'verify' | 'enroll'
+  let videoStream     = null;
+  let verifyLoop      = null;
+  let isProcessing    = false;
+  let modelsReady     = false;
+  let cameraReady     = false;
+  let attempts        = 0;
+  let lockoutUntil    = 0;
+  let enrollFrames    = [];
+
+  // ── Éléments DOM ────────────────────────────────────────────────────────────
+  const $  = id => document.getElementById(id);
+  const overlay       = () => $('face-auth-overlay');
+  const phaseLoading  = () => $('fa-phase-loading');
+  const phaseMain     = () => $('fa-phase-main');
+  const video         = () => $('fa-video');
+  const canvas        = () => $('fa-canvas');
+  const camWrap       = () => $('fa-cam-wrap');
+  const statusEl      = () => $('fa-status');
+  const btnMain       = () => $('fa-btn-main');
+  const btnReset      = () => $('fa-btn-reset');
+  const barWrap       = () => $('fa-bar-wrap');
+  const barInner      = () => $('fa-bar-inner');
+  const barLabel      = () => $('fa-bar-label');
+  const attemptsEl    = () => $('fa-attempts');
+  const lockoutEl     = () => $('fa-lockout');
+  const lockoutMsg    = () => $('fa-lockout-msg');
+  const enrollBadge   = () => $('fa-enrolled-badge');
+
+  // ── Helpers status ───────────────────────────────────────────────────────────
+  function setStatus(msg, cls) {
+    const el = statusEl();
+    el.textContent = msg;
+    el.className = 'fa-status' + (cls ? ' ' + cls : '');
+  }
+
+  function setBar(pct, color) {
+    barWrap().classList.add('show');
+    barLabel().classList.add('show');
+    barInner().style.width = pct + '%';
+    barInner().style.background = color;
+    barLabel().textContent = 'Similarité : ' + Math.round(pct) + '%';
+  }
+
+  function hideBars() {
+    barWrap().classList.remove('show');
+    barLabel().classList.remove('show');
+  }
+
+  function setCamState(state) {
+    camWrap().className = 'fa-cam-wrap' + (state ? ' ' + state : '');
+  }
+
+  function updateAttempts() {
+    if (mode !== 'verify' || attempts === 0) { attemptsEl().textContent = ''; return; }
+    const rem = MAX_ATTEMPTS - attempts;
+    attemptsEl().innerHTML = rem > 0
+      ? `Tentative ${attempts}/${MAX_ATTEMPTS} — <span>${rem}</span> restante(s)`
+      : '';
+  }
+
+  // ── Lockout ──────────────────────────────────────────────────────────────────
+  function checkLockout() {
+    const saved = parseInt(localStorage.getItem('osint_lockout') || '0');
+    if (saved && Date.now() < saved) {
+      lockoutUntil = saved;
+      return true;
+    }
+    return false;
+  }
+
+  function setLockout() {
+    lockoutUntil = Date.now() + LOCKOUT_MS;
+    localStorage.setItem('osint_lockout', lockoutUntil);
+    showLockout();
+  }
+
+  function clearLockout() {
+    lockoutUntil = 0;
+    localStorage.removeItem('osint_lockout');
+    lockoutEl().classList.remove('show');
+  }
+
+  function showLockout() {
+    stopVerifyLoop();
+    setCamState('error');
+    lockoutEl().classList.add('show');
+    btnMain().disabled = true;
+    const tick = () => {
+      const rem = Math.max(0, lockoutUntil - Date.now());
+      if (rem <= 0) {
+        clearLockout();
+        attempts = 0;
+        updateAttempts();
+        lockoutEl().classList.remove('show');
+        btnMain().disabled = false;
+        setStatus('Veuillez vous positionner face à la caméra', 'active');
+        setCamState('scanning');
+        startVerifyLoop();
+        return;
+      }
+      const m = Math.floor(rem / 60000);
+      const s = Math.floor((rem % 60000) / 1000);
+      lockoutMsg().textContent = `Trop de tentatives échouées. Réessayez dans ${m}m ${s.toString().padStart(2,'0')}s.`;
+      setTimeout(tick, 1000);
+    };
+    tick();
+  }
+
+  // ── Stockage descripteur ─────────────────────────────────────────────────────
+  function saveDescriptor(desc) {
+    const arr = Array.from(desc);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+  }
+
+  function loadDescriptor() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    try {
+      return new Float32Array(JSON.parse(raw));
+    } catch { return null; }
+  }
+
+  function hasEnrolledFace() {
+    return !!localStorage.getItem(STORAGE_KEY);
+  }
+
+  // ── Caméra ────────────────────────────────────────────────────────────────────
+  async function startCamera() {
+    try {
+      videoStream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }
+      });
+      video().srcObject = videoStream;
+      await new Promise(res => { video().onloadedmetadata = res; });
+      await video().play();
+      cameraReady = true;
+      resizeCanvas();
+    } catch (e) {
+      setStatus('❌ Caméra inaccessible : ' + e.message, 'fail');
+      setCamState('error');
+    }
+  }
+
+  function resizeCanvas() {
+    const v = video(), c = canvas();
+    c.width  = v.videoWidth  || 240;
+    c.height = v.videoHeight || 240;
+  }
+
+  function stopCamera() {
+    if (videoStream) {
+      videoStream.getTracks().forEach(t => t.stop());
+      videoStream = null;
+    }
+  }
+
+  // ── Détection faciale ─────────────────────────────────────────────────────────
+  async function detectFace() {
+    if (!cameraReady || !modelsReady) return null;
+    const v = video();
+    const det = await faceapi
+      .detectSingleFace(v, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.4 }))
+      .withFaceLandmarks()
+      .withFaceDescriptor();
+    return det || null;
+  }
+
+  // ── Draw box ───────────────────────────────────────────────────────────────────
+  function drawDetection(det, color) {
+    const c = canvas(), ctx = c.getContext('2d');
+    ctx.clearRect(0, 0, c.width, c.height);
+    if (!det) return;
+    const box = det.detection.box;
+    ctx.strokeStyle = color || '#003189';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = color || '#003189';
+    ctx.shadowBlur = 8;
+    ctx.strokeRect(box.x, box.y, box.width, box.height);
+    ctx.shadowBlur = 0;
+  }
+
+  // ── Mode : enrôlement ──────────────────────────────────────────────────────────
+  async function startEnrollCapture() {
+    if (!modelsReady || !cameraReady) return;
+    enrollFrames = [];
+    setCamState('scanning');
+    setStatus('Regardez la caméra — capture en cours…', 'active');
+    btnMain().disabled = true;
+    hideBars();
+
+    const captures = async () => {
+      if (enrollFrames.length >= ENROLL_FRAMES) {
+        await finalizeEnrollment();
+        return;
+      }
+      const det = await detectFace();
+      if (det) {
+        drawDetection(det, '#003189');
+        enrollFrames.push(det.descriptor);
+        setStatus(`Capture ${enrollFrames.length}/${ENROLL_FRAMES}…`, 'active');
+      } else {
+        setStatus('Aucun visage détecté — restez en face', 'warn');
+      }
+      setTimeout(captures, 500);
+    };
+    captures();
+  }
+
+  async function finalizeEnrollment() {
+    if (enrollFrames.length === 0) {
+      setStatus('Échec — aucun visage capturé', 'fail');
+      setCamState('error');
+      btnMain().disabled = false;
+      return;
+    }
+
+    // Moyenne des descripteurs pour plus de robustesse
+    const avg = new Float32Array(128);
+    for (const d of enrollFrames) d.forEach((v, i) => avg[i] += v);
+    avg.forEach((_, i) => avg[i] /= enrollFrames.length);
+
+    saveDescriptor(avg);
+    setCamState('success');
+    setStatus('✅ Visage enregistré avec succès !', 'ok');
+    enrollBadge().classList.add('show');
+    btnReset().style.display = '';
+    setTimeout(() => {
+      faSwitchMode('verify');
+    }, 2000);
+  }
+
+  // ── Mode : vérification (boucle temps réel) ────────────────────────────────────
+  function startVerifyLoop() {
+    if (verifyLoop) return;
+    verifyLoop = setInterval(runVerifyFrame, VERIFY_INTERVAL_MS);
+  }
+
+  function stopVerifyLoop() {
+    if (verifyLoop) { clearInterval(verifyLoop); verifyLoop = null; }
+  }
+
+  async function runVerifyFrame() {
+    if (isProcessing) return;
+    isProcessing = true;
+    try {
+      const det = await detectFace();
+      if (!det) {
+        drawDetection(null);
+        setStatus('👁 Positionnez votre visage face à la caméra', 'active');
+        hideBars();
+        setCamState('scanning');
+        isProcessing = false;
+        return;
+      }
+      drawDetection(det, '#60a5fa');
+    } finally {
+      isProcessing = false;
+    }
+  }
+
+  // ── Bouton principal (vérification manuelle) ───────────────────────────────────
+  async function faVerify() {
+    if (checkLockout()) { showLockout(); return; }
+    const stored = loadDescriptor();
+    if (!stored) {
+      setStatus('⚠️ Aucun visage enregistré — passez en mode Enrôlement', 'warn');
+      return;
+    }
+
+    stopVerifyLoop();
+    setStatus('Analyse en cours…', 'active');
+    setCamState('scanning');
+    btnMain().disabled = true;
+    hideBars();
+
+    let det = null;
+    for (let i = 0; i < 4; i++) {
+      det = await detectFace();
+      if (det) break;
+      await new Promise(r => setTimeout(r, 400));
+    }
+
+    if (!det) {
+      setStatus('❌ Aucun visage détecté — réessayez', 'fail');
+      setCamState('error');
+      btnMain().disabled = false;
+      startVerifyLoop();
+      return;
+    }
+
+    const distance = faceapi.euclideanDistance(det.descriptor, stored);
+    const similarity = Math.max(0, Math.min(100, (1 - distance) * 100));
+    const matched = distance <= THRESHOLD;
+
+    const barColor = matched ? '#059669' : distance < 0.65 ? '#d97706' : '#ED2939';
+    setBar(similarity, barColor);
+    drawDetection(det, matched ? '#059669' : '#ED2939');
+
+    if (matched) {
+      clearLockout();
+      attempts = 0;
+      setCamState('success');
+      setStatus('✅ Identité confirmée — accès autorisé', 'ok');
+      btnMain().disabled = false;
+      btnMain().textContent = '🔓 Accès accordé';
+      attemptsEl().textContent = '';
+      setTimeout(() => {
+        stopCamera();
+        stopVerifyLoop();
+        overlay().classList.add('hidden');
+        document.querySelectorAll('body > *:not(#face-auth-overlay)').forEach(el => {
+          el.style.visibility = '';
+        });
+      }, 1200);
+    } else {
+      attempts++;
+      updateAttempts();
+      setCamState('error');
+      if (attempts >= MAX_ATTEMPTS) {
+        setLockout();
+      } else {
+        const rem = MAX_ATTEMPTS - attempts;
+        setStatus(`❌ Visage non reconnu — ${rem} essai(s) restant(s)`, 'fail');
+        btnMain().disabled = false;
+        setTimeout(() => {
+          setCamState('scanning');
+          setStatus('👁 Réessayez — regardez la caméra', 'active');
+          hideBars();
+          startVerifyLoop();
+        }, 2000);
+      }
+    }
+  }
+
+  // ── Réinitialisation ────────────────────────────────────────────────────────────
+  window.faResetEnrollment = function() {
+    if (!confirm('Supprimer le visage enregistré ? Vous devrez vous ré-enrôler.')) return;
+    localStorage.removeItem(STORAGE_KEY);
+    clearLockout();
+    attempts = 0;
+    enrollBadge().classList.remove('show');
+    btnReset().style.display = 'none';
+    faSwitchMode('enroll');
+    setStatus('Visage supprimé — procédez à l\'enrôlement', 'warn');
+  };
+
+  // ── Switch mode ─────────────────────────────────────────────────────────────────
+  window.faSwitchMode = function(m) {
+    mode = m;
+    stopVerifyLoop();
+    hideBars();
+    setCamState('');
+    $('fa-tab-verify').classList.toggle('active', m === 'verify');
+    $('fa-tab-enroll').classList.toggle('active', m === 'enroll');
+
+    if (m === 'verify') {
+      const has = hasEnrolledFace();
+      if (!has) {
+        setStatus('⚠️ Aucun visage enregistré — utilisez l\'Enrôlement', 'warn');
+        btnMain().textContent = '⚠️ Aucun visage enregistré';
+        btnMain().disabled = true;
+      } else {
+        setStatus('👁 Regardez la caméra puis cliquez sur Vérifier', 'active');
+        btnMain().textContent = '🔐 Vérifier mon identité';
+        btnMain().disabled = false;
+        setCamState('scanning');
+        startVerifyLoop();
+      }
+    } else {
+      setStatus('Positionnez votre visage et cliquez sur Démarrer', 'active');
+      btnMain().textContent = '📸 Démarrer l\'enrôlement';
+      btnMain().disabled = false;
+      setCamState('');
+    }
+  };
+
+  // ── Action du bouton principal ──────────────────────────────────────────────────
+  window.faAction = function() {
+    if (mode === 'verify') faVerify();
+    else startEnrollCapture();
+  };
+
+  // ── Init ────────────────────────────────────────────────────────────────────────
+  async function init() {
+    // Masquer tout le contenu principal pendant l'auth
+    document.querySelectorAll('body > *:not(#face-auth-overlay)').forEach(el => {
+      el.style.visibility = 'hidden';
+    });
+
+    // Charger les modèles face-api.js
+    const loadMsg = $('fa-load-msg');
+    try {
+      loadMsg.textContent = 'Chargement du détecteur…';
+      await faceapi.nets.tinyFaceDetector.loadFromUri(MODELS_URL);
+      loadMsg.textContent = 'Chargement des landmarks…';
+      await faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL);
+      loadMsg.textContent = 'Chargement du descripteur…';
+      await faceapi.nets.faceRecognitionNet.loadFromUri(MODELS_URL);
+      modelsReady = true;
+    } catch(e) {
+      loadMsg.textContent = '❌ Erreur chargement modèles : ' + e.message;
+      return;
+    }
+
+    // Démarrer la caméra
+    loadMsg.textContent = 'Démarrage de la caméra…';
+    await startCamera();
+
+    // Afficher l'interface principale
+    phaseLoading().style.display = 'none';
+    phaseMain().style.display = '';
+
+    // Badge si visage déjà enrôlé
+    if (hasEnrolledFace()) {
+      enrollBadge().classList.add('show');
+      btnReset().style.display = '';
+    }
+
+    // Vérifier lockout sauvegardé
+    if (checkLockout()) {
+      phaseMain().style.display = '';
+      faSwitchMode('verify');
+      showLockout();
+      return;
+    }
+
+    // Mode initial : verify si enrôlé, sinon enroll
+    faSwitchMode(hasEnrolledFace() ? 'verify' : 'enroll');
+  }
+
+  // Lancer après chargement DOM
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+</script>
+<!-- ===== FIN FACE AUTH ===== -->
+
 </body>
 </html>
